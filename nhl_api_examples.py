@@ -10,7 +10,7 @@ def main():
     #Startpoint for every API request
     url = 'https://statsapi.web.nhl.com/'
 
-    #team stats example (ID: 23 - Canucks)
+    #team stats example (ID: 23 - Canucks, Franchise ID: 20) 
     endpoint = "api/v1/teams/23"
 
     #player stats example (ID: 8474568 - Luke Schenn)

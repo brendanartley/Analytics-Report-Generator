@@ -21,5 +21,12 @@ explore data in Ipython
 - Where are goalies getting scored on?
 - What makes a Stanley Cup winning team different from other teams?
 - Predict attendance in an Arena?
+- What makes the best powerplay's most effective?
 
 example GameID = 2020020018
+
+### Dumping JSON Data to File
+
+import json
+with open('data.json', 'w') as f:
+    json.dump(data, f)
