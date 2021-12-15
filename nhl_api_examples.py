@@ -5,7 +5,7 @@ def main():
     '''
     See documentation on NHL API by Drew Hynes.
 
-    https://gitlab.com/dword4/nhlapi/-/tree/master
+    https://gitlab.com/dword4/nhlapi/-/blob/master/stats-api.md
     '''
     #Startpoint for every API request
     url = 'https://statsapi.web.nhl.com/'

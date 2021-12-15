@@ -1,0 +1,28 @@
+def game_ids(id=23, season_start=20112012, season_end=20202021, just_regular_season=True):
+    """
+    Given starting season, ending season, and regular season boolean,
+    return all the game_ids for the time range as a python list.
+    """
+    #variables
+    id_array = []
+    url = constants.NHL_STATS_API
+    endpoint = "api/v1/schedule/?expand=schedule.linescore&season="
+
+    #urls
+    urls = ["{}{}{}{}".format(url, endpoint, i, i+1) for i in range(20112012 // 10000, (20202021 // 10000)+1)]
+    if just_regular_season:
+        urls = [val + "&gameType=R" for val in urls]
+
+    #asynchronous requests - 10x faster than simple requests
+    reqs = (grequests.get(u) for u in urls)
+    responses = grequests.map(reqs)
+
+    #Fetch ID's from json
+    for r in responses:
+        if r.ok:
+            d = r.json()
+            for i in range(len(d["dates"])):
+                for j in range(len(d["dates"][i]["games"])):
+                    id_array.append(d["dates"][i]["games"][j]["gamePk"])
+
+    return id_array

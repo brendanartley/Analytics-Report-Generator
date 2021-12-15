@@ -9,6 +9,8 @@ explore data in Ipython
 
 ### Notes
 
+- I would like to only work with data in the past 10 years. Due to the vast differences in the game from 20 years ago till now, it is probably for the best.
+
 - Use tableau for a custom rink visualization?
 
 ### Potential Questions?
@@ -30,3 +32,9 @@ example GameID = 2020020018
 import json
 with open('data.json', 'w') as f:
     json.dump(data, f)
+
+### Grequests over Requests
+
+Given that the NHL_API server does not have any limitations, we can leverage the power of asynchronous requests and get information much faster. 
+
+Asynchronous requests basically create requests at the same time to reduce the time we are spending waiting for responses.
