@@ -1,5 +1,6 @@
 import sys
 import grequests
+from zope.interface.declarations import alsoProvides
 import constants
 import json
 
@@ -91,7 +92,7 @@ def simple_season_game_stats(fname, season_start=20112012, season_end=20202021, 
                             f.write(json.dumps(rj) + '\n')
         pass
 
-def get_player_stats(game_id_array=[2020020663, 2020020664, 2020020195]):
+def get_player_stats(fname="event_stats", game_id_array=[2020020663, 2020020664, 2020020195]):
     """
     Given a list of game ID's, returns raw event data for each game
     in a format suitable for pyspark.
@@ -113,10 +114,71 @@ def get_player_stats(game_id_array=[2020020663, 2020020664, 2020020195]):
     #
     # d["liveData"]["plays"]["allPlays"][10]
     #  - need to find out who was on the ice for each event
+    rj = {}
 
-    pass
+    with open("./raw_data/{}.json".format(fname), 'w', encoding='utf-16') as f:
+        for resp in responses:
+            if resp.ok:
+                d = resp.json()
+
+                if "gamePk" in d:
+                    rj["gamePk"] = d["gamePk"]
+                else:
+                    continue
+                
+                for val in d["liveData"]["plays"]["allPlays"]:
+
+                    rj["event"] = val["result"]["event"]
+                    rj["periodTime"] = val["about"]["periodTime"]
+                    rj["dateTime"] = val["about"]["dateTime"]
+                    rj["period"] = val["about"]["period"]
+                    
+                    #on ice-coordinates
+                    if len(val["coordinates"]) == 2:
+                        rj["x_coordinate"] = val["coordinates"]["x"]
+                        rj["y_coordinate"] = val["coordinates"]["y"]
+                    else:
+                        rj["x_coordinate"] = None
+                        rj["y_coordinate"] = None
+
+                    #players
+                    if "players" in val:
+                        if len(val["players"]) == 1:
+                            rj["p1_id"] = val["players"][0]["player"]["id"]
+                            rj["p1_type"] = val["players"][0]["playerType"]
+                            rj["p2_id"] = None
+                            rj["p2_type"] = None
+                        if len(val["players"]) == 2:
+                            rj["p1_id"] = val["players"][0]["player"]["id"]
+                            rj["p1_type"] = val["players"][0]["playerType"]
+                            rj["p2_id"] = val["players"][1]["player"]["id"]
+                            rj["p2_type"] = val["players"][1]["playerType"]
+                        else:
+                            continue
+                    else:
+                        rj["p1_id"] = None
+                        rj["p1_type"] = None
+                        rj["p2_id"] = None
+                        rj["p2_type"] = None
+
+                    #team-id if relevant
+                    if "team" in val:
+                        rj["team_id"] = val["team"]["id"]
+                    else:
+                        rj["team_id"] = None
+                    
+                    #write output to JSON
+                    f.write(json.dumps(rj) + '\n')
+            else:
+                print("{}".format(resp.status_code))
+        
+        #remove the '/n' at the end of JSON file
+        f.seek(0, 2) # seek to end of file
+        f.seek(f.tell() - 2, 0)  # seek to the second last char of file
+        f.truncate()
 
 def main(output):
+    get_player_stats()
     return
     
 if __name__ == '__main__':
