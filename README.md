@@ -4,8 +4,11 @@ Working with the NHL API to see what I can predict with the data.
 
 See Documentation on this here. [Stats Api Docs](https://gitlab.com/dword4/nhlapi/-/blob/master/stats-api.md#configurations)
 
-explore data in Ipython 
-- python -m IPython
+
+Current Idea: Create Analytics Report using FPDF
+- include stats leaders for across a time period (month, year)
+    - split defenders + offensive?
+- include Corsi rating
 
 ### Notes
 

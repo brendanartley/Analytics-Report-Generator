@@ -1,13 +1,17 @@
 import sys
 import grequests
-from zope.interface.declarations import alsoProvides
 import constants
 import json
+from tqdm import tqdm
 
-def game_ids(just_regular_season=True, filter_by_team=False, teamId=23, season_start=20112012, season_end=20202021):
+def game_ids(just_regular_season, filter_by_team, season_start, season_end, teamId):
     """
-    Given starting season, ending season, and regular season boolean, team boolean, team id..
-    return all the game_ids for the time range as a python list.
+    inputs ..(just_regular_season=True, filter_by_team=False, season_start=20112012, season_end=20202021, teamId=23)
+
+    Given starting season, ending season, and regular season boolean, team boolean, team id etc..
+    Returns all the game_ids for specified the season range as an array/list.
+
+    season_start -> season_end is inclusive
     """
     #variables
     id_array = []
@@ -92,7 +96,7 @@ def simple_season_game_stats(fname, season_start=20112012, season_end=20202021, 
                             f.write(json.dumps(rj) + '\n')
         pass
 
-def get_player_stats(fname="event_stats", game_id_array=[2020020663, 2020020664, 2020020195]):
+def get_event_stats(game_id_array, fname):
     """
     Given a list of game ID's, returns raw event data for each game
     in a format suitable for pyspark.
@@ -106,7 +110,7 @@ def get_player_stats(fname="event_stats", game_id_array=[2020020663, 2020020664,
     urls = [url + endpoint.format(date) for date in game_id_array]
 
     #Making requests - 10x faster than simple requests
-    reqs = (grequests.get(u) for u in urls)
+    reqs = (grequests.get(u) for u in tqdm(urls, desc="API Requests"))
     responses = grequests.map(reqs)
 
     #NEED TO COMPLETE FUNCTION HERE - Need to explore raw data
@@ -116,8 +120,8 @@ def get_player_stats(fname="event_stats", game_id_array=[2020020663, 2020020664,
     #  - need to find out who was on the ice for each event
     rj = {}
 
-    with open("./raw_data/{}.json".format(fname), 'w', encoding='utf-16') as f:
-        for resp in responses:
+    with open("../raw_data/{}.json".format(fname), 'w', encoding='utf-16') as f:
+        for resp in tqdm(responses, desc="Writing Data to Disk"):
             if resp.ok:
                 d = resp.json()
 
@@ -125,7 +129,7 @@ def get_player_stats(fname="event_stats", game_id_array=[2020020663, 2020020664,
                     rj["gamePk"] = d["gamePk"]
                 else:
                     continue
-                
+
                 for val in d["liveData"]["plays"]["allPlays"]:
 
                     rj["event"] = val["result"]["event"]
@@ -141,25 +145,26 @@ def get_player_stats(fname="event_stats", game_id_array=[2020020663, 2020020664,
                         rj["x_coordinate"] = None
                         rj["y_coordinate"] = None
 
-                    #players
+                    #players involved, can be up to 4
                     if "players" in val:
-                        if len(val["players"]) == 1:
-                            rj["p1_id"] = val["players"][0]["player"]["id"]
-                            rj["p1_type"] = val["players"][0]["playerType"]
-                            rj["p2_id"] = None
-                            rj["p2_type"] = None
-                        if len(val["players"]) == 2:
-                            rj["p1_id"] = val["players"][0]["player"]["id"]
-                            rj["p1_type"] = val["players"][0]["playerType"]
-                            rj["p2_id"] = val["players"][1]["player"]["id"]
-                            rj["p2_type"] = val["players"][1]["playerType"]
-                        else:
-                            continue
+                        num_players = len(val["players"])
+                        if num_players > 4:
+                            print(" ---------- Event > 4 Players?? ---------- ")
+                        for i in range(4):
+                            if i < num_players:
+                                rj["p{}_id".format(i+1)] = val["players"][i]["player"]["id"]
+                                rj["p{}_type".format(i+1)] = val["players"][i]["playerType"]
+                                rj["p{}_name".format(i+1)] = val["players"][i]["player"]["fullName"]
+                            else:
+                                rj["p{}_id".format(i+1)] = None
+                                rj["p{}_type".format(i+1)] = None
+                                rj["p{}_name".format(i+1)] = None
+
                     else:
-                        rj["p1_id"] = None
-                        rj["p1_type"] = None
-                        rj["p2_id"] = None
-                        rj["p2_type"] = None
+                        for i in range(4):
+                            rj["p{}_id".format(i+1)] = None
+                            rj["p{}_type".format(i+1)] = None
+                            rj["p{}_name".format(i+1)] = None
 
                     #team-id if relevant
                     if "team" in val:
@@ -178,12 +183,10 @@ def get_player_stats(fname="event_stats", game_id_array=[2020020663, 2020020664,
         f.truncate()
 
 def main(output):
-    get_player_stats()
+    #canucks_game_ids = game_ids(True, True, season_start=20112012, season_end=20202021, teamId=23)
+    get_event_stats([2020020663], fname=output)
     return
     
 if __name__ == '__main__':
-    if len(sys.argv) > 1:
-        output = sys.argv[1]
-    else:
-        output = "simple_stats"
+    output = sys.argv[1]
     main(output)
