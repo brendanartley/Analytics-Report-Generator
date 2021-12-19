@@ -10,11 +10,19 @@ Current Idea: Create Analytics Report using FPDF
     - split defenders + offensive?
 - include Corsi rating
 
+## Ex ID's
+
+Hoglander - 8481535
+Canucks - 23
+
 ### Notes
 
 - I would like to only work with data in the past 10 years. Due to the vast differences in the game from 20 years ago till now, it is probably for the best.
 
 - Use tableau for a custom rink visualization?
+
+- Need to add a more concrete way of checking inputs. 
+    ie. Specify teamID, season start and end on program call.
 
 ### Potential Questions?
 
