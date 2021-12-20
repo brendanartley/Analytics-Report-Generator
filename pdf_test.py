@@ -1,5 +1,8 @@
 from fpdf import FPDF
 
+WIDTH = 210
+HEIGHT = 297
+
 class PDF(FPDF):
     #'w': 210, 'h': 297
     def header(self):
@@ -32,5 +35,6 @@ pdf.set_font('Times', '', 12)
 for i in range(1, 25):
     pdf.cell(0, 10, 'Printing line number ' + str(i), 0, 1)
 
-pdf.image('./imgs/simple_rink_edited.jpg', x = None, y = None, w = 190, h = 0, type = '', link = '')
+pdf.image('test_image.png', x = 10, y = None, w = (WIDTH-30)//2, h = 0, type = '', link = '')
+pdf.image('test_image2.png', x = 10, y = None, w = (WIDTH-30)//2, h = 0, type = '', link = '')
 pdf.output('test.pdf', 'F')
