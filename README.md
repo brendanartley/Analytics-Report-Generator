@@ -49,3 +49,7 @@ with open('data.json', 'w') as f:
 Given that the NHL_API server does not have any limitations, we can leverage the power of asynchronous requests and get information much faster. 
 
 Asynchronous requests basically create requests at the same time to reduce the time we are spending waiting for responses.
+
+### Photopea
+
+Used [PhotoPea](https://www.photopea.com/) to make edits to the rink image. Great in-browser, free tool that is like photoshop.
