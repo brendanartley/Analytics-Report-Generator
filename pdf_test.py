@@ -9,11 +9,11 @@ class PDF(FPDF):
         # Logo (name, x, y, w = 0, h = 0)
         # w,h = 0 means automatic
         self.image('./imgs/canucks_logo.png', 10, 8, 15, 0)
-        # Arial bold 15
+        # font (font,bold,size)
         self.set_font('Arial', 'B', 15)
         # Move to the right
         self.cell(80)
-        # Title
+        # Title (w,h,text,border,ln,align)
         self.cell(30, 10, 'Analytics Report', 0, 0, 'C')
         # Line break
         self.ln(20)
@@ -30,11 +30,16 @@ class PDF(FPDF):
 # Instantiation of inherited class
 pdf = PDF()
 pdf.alias_nb_pages()
+
+# ---------- First Page ----------
 pdf.add_page()
 pdf.set_font('Times', '', 12)
 for i in range(1, 25):
     pdf.cell(0, 10, 'Printing line number ' + str(i), 0, 1)
 
-pdf.image('test_image.png', x = 10, y = None, w = (WIDTH-30)//2, h = 0, type = '', link = '')
-pdf.image('test_image2.png', x = 10, y = None, w = (WIDTH-30)//2, h = 0, type = '', link = '')
+# ---------- Second Page ----------
+pdf.add_page()
+pdf.image('test_image.png', x = 10, y = 30, w = (WIDTH-30)//2, h = 0, type = '', link = '')
+pdf.image('test_image3.png', x = (WIDTH + 20)//2, y = 35, w = (WIDTH-80)//2, h = 0, type = '', link = '')
+#pdf.image('test_image2.png', x = 10, y = HEIGHT, w = (WIDTH-30)//2, h = 0, type = '', link = '')
 pdf.output('test.pdf', 'F')
