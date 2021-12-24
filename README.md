@@ -15,7 +15,7 @@ Current Idea: Create Analytics Report using FPDF
 Hoglander - 8481535
 Canucks - 23
 
-### Notes
+### Notes / To Do
 
 - I would like to only work with data in the past 10 years. Due to the vast differences in the game from 20 years ago till now, it is probably for the best.
 
@@ -23,6 +23,9 @@ Canucks - 23
 
 - Need to add a more concrete way of checking inputs. 
     ie. Specify teamID, season start and end on program call.
+
+- Change color and size of dots on scatter plot
+- Include titles on the bar and pie plots
 
 ### Potential Questions?
 

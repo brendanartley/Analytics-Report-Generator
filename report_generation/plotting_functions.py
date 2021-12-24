@@ -4,7 +4,7 @@ import sys
 
 plt.rcParams.update({'font.size': 22})
 
-def shot_scatter_plot(data_fname, rink_image_fname, event, legend_labels, out_fname):
+def shot_scatter_plot(data_fname, rink_image_fname, event, legend_labels, colors, out_fname):
     """
     Given a list of parameters, creates shot plot and saves 
     image to temporary file before being added to report.
@@ -15,8 +15,8 @@ def shot_scatter_plot(data_fname, rink_image_fname, event, legend_labels, out_fn
 
     #plot data
     plt.figure(figsize=(10,10))
-    plt.scatter(df.loc[df['event'] == event]["x_coordinate"], df.loc[df['event'] == event]["y_coordinate"], c="#00205B")
-    plt.scatter(df.loc[df['event'] != event]["x_coordinate"], df.loc[df['event'] != event]["y_coordinate"], c="#D32717")
+    plt.scatter(df.loc[df['event'] == event]["x_coordinate"], df.loc[df['event'] == event]["y_coordinate"], c=colors[0], s=100, zorder=3)
+    plt.scatter(df.loc[df['event'] != event]["x_coordinate"], df.loc[df['event'] != event]["y_coordinate"], c=colors[1], s=100, zorder=1)
     plt.imshow(rink_img, cmap="gray", extent=[-100, 100, -42.5, 42.5])
     plt.xlim(left=-100, right=0)
     plt.ylim(bottom=-42.5, top=42.5)
@@ -27,14 +27,13 @@ def shot_scatter_plot(data_fname, rink_image_fname, event, legend_labels, out_fn
     plt.savefig('./{}.png'.format(out_fname), dpi=300, bbox_inches='tight')
     pass
 
-def shot_pie_plot(data_fname, event, legend_labels, out_fname, color_switch=False):
+def shot_pie_plot(data_fname, event, legend_labels, colors, out_fname, color_switch=False):
 
     #read data
     df = pd.read_csv(data_fname, header=0)
     goal_pct = round(len(df.loc[df['event'] == event]["x_coordinate"])/len(df), 3)*100
 
     #plot colors
-    colors = ["#FFAE49", "#44B7C2"]
     if color_switch:
         colors = colors[::-1]
 
@@ -49,7 +48,7 @@ def shot_pie_plot(data_fname, event, legend_labels, out_fname, color_switch=Fals
     plt.savefig('./{}.png'.format(out_fname), dpi=300, bbox_inches='tight')
     pass
 
-def by_period_bar_plot(data_fname, event, color,  out_fname):
+def by_period_bar_plot(data_fname, event, color, out_fname):
     """
     Given a dataframe, returns a matplotlib bar plot of
     the number of goals scored each period
@@ -77,7 +76,8 @@ def by_period_bar_plot(data_fname, event, color,  out_fname):
     #labels / grid
     plt.gca().yaxis.grid(zorder=0)  
     plt.xlabel("Period")
-    plt.ylabel("All " + event)
+    plt.ylabel(event)
+    plt.title(event + " by Period")
     plt.xticks(fontsize=14)
     plt.yticks(fontsize=14)
 
@@ -91,15 +91,16 @@ if __name__ == "__main__":
 
     data_fname = "/Users/brendanartley/dev/Sports-Analytics/raw_data/player_sample2/sample2.csv"
     rink_im = "/Users/brendanartley/dev/Sports-Analytics/imgs/simple_rink_grey.jpg"
+    colors = ["#FFAE49", "#44B7C2"]
 
-    # #scatter plot rink imgs
-    # shot_scatter_plot(data_fname, rink_im, event="Goal", legend_labels=["Goal", "No Goal"], out_fname="rink_image1")
-    # shot_scatter_plot(data_fname, rink_im, event="Missed Shot", legend_labels=["Missed Net", "On Net"],  out_fname="rink_image2")
+    #scatter plot rink imgs
+    shot_scatter_plot(data_fname, rink_im, event="Goal", legend_labels=["Goal", "No Goal"], colors = colors, out_fname="rink_image1")
+    shot_scatter_plot(data_fname, rink_im, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = colors, out_fname="rink_image2")
 
-    # #pie plot imgs
-    # shot_pie_plot(data_fname, event="Goal", legend_labels=["Goal", "Non Goal"], out_fname="pie_plot1")
-    shot_pie_plot(data_fname, event="Missed Shot", legend_labels=["Missed Net", "On Net"], out_fname="pie_plot2", color_switch=True)
+    #pie plot imgs
+    shot_pie_plot(data_fname, event="Goal", legend_labels=["Goal", "Non Goal"], colors = colors, out_fname="pie_plot1")
+    shot_pie_plot(data_fname, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = colors, out_fname="pie_plot2", color_switch=True)
 
-    # #Bar plot imgs
-    # by_period_bar_plot(data_fname, event="Goals", color="#44B7C2", out_fname="bar_plot1")
-    # by_period_bar_plot(data_fname, event="Shots", color="#FFAE49", out_fname="bar_plot2")
+    #Bar plot imgs
+    by_period_bar_plot(data_fname, event="Goals", color = colors[0], out_fname="bar_plot1")
+    by_period_bar_plot(data_fname, event="Shots", color = colors[1], out_fname="bar_plot2")
