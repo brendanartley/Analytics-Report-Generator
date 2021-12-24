@@ -53,3 +53,9 @@ Asynchronous requests basically create requests at the same time to reduce the t
 ### Photopea
 
 Used [PhotoPea](https://www.photopea.com/) to make edits to the rink image. Great in-browser, free tool that is like photoshop.
+
+
+### Shot Selection Data
+
+df3 = df.where((df["p1_id"] == 8481535) & (df["p1_type"].isin(["Shooter","Scorer"]))).select("x_coordinate","y_coordinate","event","p1_id","p1_name","period","periodTime")
+df3.coalesce(1).write.option("header", True).csv("./player_sample2", mode="overwrite")

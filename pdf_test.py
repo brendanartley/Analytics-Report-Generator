@@ -39,7 +39,10 @@ for i in range(1, 25):
 
 # ---------- Second Page ----------
 pdf.add_page()
-pdf.image('test_image.png', x = 10, y = 30, w = (WIDTH-30)//2, h = 0, type = '', link = '')
-pdf.image('test_image3.png', x = (WIDTH + 20)//2, y = 35, w = (WIDTH-80)//2, h = 0, type = '', link = '')
-#pdf.image('test_image2.png', x = 10, y = HEIGHT, w = (WIDTH-30)//2, h = 0, type = '', link = '')
+pdf.image('rink_image1.png', x = 10, y = 30, w = (WIDTH-30)//2, h = 0, type = '', link = '')
+pdf.image('pie_plot1.png', x = (WIDTH + 20)//2, y = 35, w = (WIDTH-80)//2, h = 0, type = '', link = '')
+pdf.image('rink_image2.png', x = 10, y = 120, w = (WIDTH-30)//2, h = 0, type = '', link = '')
+pdf.image('pie_plot2.png', x = (WIDTH + 20)//2, y = 125, w = (WIDTH-80)//2, h = 0, type = '', link = '')
+pdf.image('bar_plot1.png', x = 10, y = 210, w = (WIDTH-30)//2, h = 0, type = '', link = '')
+pdf.image('bar_plot2.png', x = (WIDTH + 10)//2, y = 210, w = (WIDTH-30)//2, h = 0, type = '', link = '')
 pdf.output('test.pdf', 'F')
