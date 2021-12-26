@@ -41,8 +41,13 @@ def shot_pie_plot(data_fname, event, legend_labels, colors, out_fname, color_swi
     sizes = [goal_pct, 100-goal_pct]
     explodes = [0.25, 0]
     plt.figure(figsize=(10,10))
-    plt.pie(sizes, labels=legend_labels, explode=explodes, shadow=True, autopct='%1.1f%%', startangle=90, colors=colors, textprops={'fontsize': 22})
+    plt.pie(sizes, labels=legend_labels, explode=explodes, shadow=True, autopct='%1.1f%%', startangle=0, colors=colors, textprops={'fontsize': 22})
     plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+    if event == "Goal":
+        plt.title("Shot Scored?")
+    else:
+        plt.title("Shot on Net?")
     
     #save figure
     plt.savefig('./{}.png'.format(out_fname), dpi=300, bbox_inches='tight')
@@ -89,18 +94,18 @@ def by_period_bar_plot(data_fname, event, color, out_fname):
 if __name__ == "__main__":
     #out_fname = sys.argv[1]
 
-    data_fname = "/Users/brendanartley/dev/Sports-Analytics/raw_data/player_sample2/sample2.csv"
+    data_fname = "/Users/brendanartley/dev/Sports-Analytics/raw_data/player_sample/sample.csv"
     rink_im = "/Users/brendanartley/dev/Sports-Analytics/imgs/simple_rink_grey.jpg"
     colors = ["#FFAE49", "#44B7C2"]
 
-    #scatter plot rink imgs
-    shot_scatter_plot(data_fname, rink_im, event="Goal", legend_labels=["Goal", "No Goal"], colors = colors, out_fname="rink_image1")
-    shot_scatter_plot(data_fname, rink_im, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = colors, out_fname="rink_image2")
+    # #scatter plot rink imgs
+    # shot_scatter_plot(data_fname, rink_im, event="Goal", legend_labels=["Goal", "No Goal"], colors = colors, out_fname="rink_image1")
+    # shot_scatter_plot(data_fname, rink_im, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = colors, out_fname="rink_image2")
 
     #pie plot imgs
-    shot_pie_plot(data_fname, event="Goal", legend_labels=["Goal", "Non Goal"], colors = colors, out_fname="pie_plot1")
+    shot_pie_plot(data_fname, event="Goal", legend_labels=["Scored", "Other"], colors = colors, out_fname="pie_plot1")
     shot_pie_plot(data_fname, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = colors, out_fname="pie_plot2", color_switch=True)
 
-    #Bar plot imgs
-    by_period_bar_plot(data_fname, event="Goals", color = colors[0], out_fname="bar_plot1")
-    by_period_bar_plot(data_fname, event="Shots", color = colors[1], out_fname="bar_plot2")
+    # #Bar plot imgs
+    # by_period_bar_plot(data_fname, event="Goals", color = colors[0], out_fname="bar_plot1")
+    # by_period_bar_plot(data_fname, event="Shots", color = colors[1], out_fname="bar_plot2")

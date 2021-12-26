@@ -4,7 +4,7 @@ import constants
 import json
 from tqdm import tqdm
 
-def game_ids(just_regular_season, filter_by_team, season_start, season_end, teamId):
+def get_game_ids(just_regular_season, filter_by_team, season_start, season_end, teamId):
     """
     inputs ..(just_regular_season=True, filter_by_team=False, season_start=20112012, season_end=20202021, teamId=23)
 
@@ -49,6 +49,7 @@ def simple_season_game_stats(fname, season_start=20112012, season_end=20202021, 
     """
 
     #URL format
+    fname = "linescore_" + fname
     url = constants.NHL_STATS_API
     endpoint = "api/v1/schedule/?expand=schedule.linescore&season="
 
@@ -62,20 +63,22 @@ def simple_season_game_stats(fname, season_start=20112012, season_end=20202021, 
     responses = grequests.map(reqs)
 
     with open("./raw_data/{}.json".format(fname), 'w', encoding='utf-16') as f:
+
+        rj = {"gamePk":"",
+              "season":"",
+              "away_team_name":"",
+              "away_team_id":"",
+              "away_team_goals":"",
+              "away_shots":"",
+              "home_team_name":"",
+              "home_team_id":"",
+              "home_team_goals":"",
+              "home_shots":""
+              }
+
         for r in responses:
             if r.ok:
                 d = r.json()
-                rj = {"gamePk":"",
-                    "season":"",
-                    "away_team_name":"",
-                    "away_team_id":"",
-                    "away_team_goals":"",
-                    "away_shots":"",
-                    "home_team_name":"",
-                    "home_team_id":"",
-                    "home_team_goals":"",
-                    "home_shots":""
-                    }
 
                 #looping through every game in specified season
                 for i in range(len(d["dates"])):
@@ -96,12 +99,13 @@ def simple_season_game_stats(fname, season_start=20112012, season_end=20202021, 
                             f.write(json.dumps(rj) + '\n')
         pass
 
-def get_event_stats(game_id_array, fname):
+def get_all_game_event_stats(game_id_array, fname):
     """
     Given a list of game ID's, returns raw event data for each game
     in a format suitable for pyspark.
     """
     #Variables
+    fname = "livefeed_" + fname
     id_array = []
     url = constants.NHL_STATS_API
     endpoint = "api/v1/game/{}/feed/live"
@@ -182,9 +186,70 @@ def get_event_stats(game_id_array, fname):
         f.seek(f.tell() - 2, 0)  # seek to the second last char of file
         f.truncate()
 
+def get_players_season_goal_stats(player_id_array, season, fname):
+    """
+    Blah Blah
+    """
+    #constants
+    fname = "goalsByGameSituationStats_" + fname
+    url = constants.NHL_STATS_API
+    endpoint = "api/v1/people/{}/stats?stats=goalsByGameSituation&season="
+    urls = []
+
+    goal_stats_tracked = [
+              'goalsInFirstPeriod',
+              'goalsInSecondPeriod',
+              'goalsInThirdPeriod',
+              'gameWinningGoals',
+              'emptyNetGoals',
+              'shootOutGoals',
+              'shootOutShots',
+              'goalsTrailingByOne',
+              'goalsTrailingByThreePlus',
+              'goalsWhenTied',
+              'goalsLeadingByOne',
+              'goalsLeadingByTwo',
+              'goalsLeadingByThreePlus',
+              'penaltyGoals',
+              'penaltyShots',
+              ]
+
+    #Creating each individual URL
+    for p_id in player_id_array:
+        urls.append(url + endpoint.format(str(p_id)) + str(season))
+
+    #making requests
+    reqs = (grequests.get(u) for u in urls)
+    responses = grequests.map(reqs)
+
+    #writing data to file
+    with open("./raw_data/{}.json".format(fname), 'w', encoding='utf-16') as f:
+        
+        rj = {}
+        for event in goal_stats_tracked:
+            rj[event] = ""
+
+        for i, r in enumerate(responses):
+            if r.ok:
+                d = r.json()
+                rj['p_id'] = player_id_array[i]
+
+                for ev in goal_stats_tracked:
+                    if ev in d["stats"][0]["splits"][0]["stat"]:
+                        rj[ev] = d["stats"][0]["splits"][0]["stat"][ev]
+                    else:
+                        rj[ev] = 0
+
+                f.write(json.dumps(rj) + '\n')
+
+
+
+
 def main(output):
     #canucks_game_ids = game_ids(True, True, season_start=20112012, season_end=20202021, teamId=23)
-    get_event_stats([2020020663], fname=output)
+    #get_all_game_event_stats([2020020663], fname=output)
+
+    get_players_season_goal_stats([8481535], 20202021, "Sample")
     return
     
 if __name__ == '__main__':

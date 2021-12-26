@@ -1,6 +1,7 @@
 #My file
 raw_data/
 *.png
+.*
 
 
 # Byte-compiled / optimized / DLL files

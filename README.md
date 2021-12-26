@@ -25,7 +25,9 @@ Canucks - 23
     ie. Specify teamID, season start and end on program call.
 
 - Change color and size of dots on scatter plot
-- Include titles on the bar and pie plots
+- Maybe Include titles on the bar and pie plots
+
+- Use plotly or some other decent table visuluzlization library to visualize some data?
 
 ### Potential Questions?
 
