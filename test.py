@@ -88,8 +88,8 @@ for row in data:
 
 WIDTH = 210
 HEIGHT = 297
-pdf.image('rink_image1.png', x = 40, y = 180, w = 130, h = 0, type = '', link = '')
 pdf.image('pie_plot1.png', x = 110, y = 20, w = (WIDTH-40)//2, h = 0, type = '', link = '')
 pdf.image('pie_plot2.png', x = 115, y = 95, w = (WIDTH-50)//2, h = 0, type = '', link = '')
+pdf.image('rink_image1.png', x = 50, y = 180, w = 110, h = 0, type = '', link = '')
  
 pdf.output('table-using-cell-borders.pdf','F')

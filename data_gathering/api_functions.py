@@ -186,9 +186,11 @@ def get_all_game_event_stats(game_id_array, fname):
         f.seek(f.tell() - 2, 0)  # seek to the second last char of file
         f.truncate()
 
-def get_players_season_goal_stats(player_id_array, season, fname):
+def get_player_season_goal_stats(player_id_array, season, fname):
     """
-    Blah Blah
+    Given an array of player_id's and a season,
+    returns the goal statistics for each player
+    in JSON format.
     """
     #constants
     fname = "goalsByGameSituationStats_" + fname
@@ -196,7 +198,7 @@ def get_players_season_goal_stats(player_id_array, season, fname):
     endpoint = "api/v1/people/{}/stats?stats=goalsByGameSituation&season="
     urls = []
 
-    goal_stats_tracked = [
+    stats_tracked = [
               'goalsInFirstPeriod',
               'goalsInSecondPeriod',
               'goalsInThirdPeriod',
@@ -242,14 +244,83 @@ def get_players_season_goal_stats(player_id_array, season, fname):
 
                 f.write(json.dumps(rj) + '\n')
 
+def get_player_season_general_stats(player_id_array, season, fname):
+    """
+    Given an array of player_id's and a season,
+    returns the general statistics for each player
+    in JSON format.
+    """
+    
+    #constants
+    fname = "statsSingleSeason_" + fname
+    url = constants.NHL_STATS_API
+    endpoint = "api/v1/people/{}/stats?stats=statsSingleSeason&season="
+    urls = []
 
+    stats_tracked = [
+        'timeOnIce'
+        'assists',
+        'goals',
+        'pim',
+        'shots',
+        'games',
+        'hits',
+        'powerPlayGoals',
+        'powerPlayPoints',
+        'powerPlayTimeOnIce',
+        'evenTimeOnIce',
+        'penaltyMinutes' ,
+        'faceOffPct',
+        'shotPct',
+        'gameWinningGoals',
+        'overTimeGoals',
+        'shortHandedGoals',
+        'shortHandedPoints',
+        'shortHandedTimeOnIce',
+        'blocked',
+        'plusMinus',
+        'points',
+        'shifts',
+        'timeOnIcePerGame',
+        'evenTimeOnIcePerGame',
+        'shortHandedTimeOnIcePerGame',
+        'powerPlayTimeOnIcePerGame',
+      ]
+
+    #Creating each individual URL
+    for p_id in player_id_array:
+        urls.append(url + endpoint.format(str(p_id)) + str(season))
+
+    #making requests
+    reqs = (grequests.get(u) for u in urls)
+    responses = grequests.map(reqs)
+
+    #writing data to file
+    with open("./raw_data/{}.json".format(fname), 'w', encoding='utf-16') as f:
+        
+        rj = {}
+        for event in stats_tracked:
+            rj[event] = ""
+
+        for i, r in enumerate(responses):
+            if r.ok:
+                d = r.json()
+                rj['p_id'] = player_id_array[i]
+
+                for ev in stats_tracked:
+                    if ev in d["stats"][0]["splits"][0]["stat"]:
+                        rj[ev] = d["stats"][0]["splits"][0]["stat"][ev]
+                    else:
+                        rj[ev] = 0
+
+                f.write(json.dumps(rj) + '\n')
 
 
 def main(output):
     #canucks_game_ids = game_ids(True, True, season_start=20112012, season_end=20202021, teamId=23)
     #get_all_game_event_stats([2020020663], fname=output)
 
-    get_players_season_goal_stats([8481535], 20202021, "Sample")
+    get_player_season_general_stats([8481535], 20202021, "Sample")
     return
     
 if __name__ == '__main__':
