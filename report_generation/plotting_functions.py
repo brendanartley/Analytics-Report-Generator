@@ -90,6 +90,57 @@ def by_period_bar_plot(data_fname, event, color, out_fname):
     plt.savefig('./{}.png'.format(out_fname), dpi=300, bbox_inches='tight')
     pass
 
+def rankings_hbar_plot(data2, out_fname):
+    """
+    Given player statistics rankings for the season,
+    creates a horizontal bar plot.
+
+    - Need to modify function to take a data format other than nested array
+    """
+
+    def sort_rankings(data):
+        """
+        Given list of rankings, returns sorted array
+        """
+        l = [] 
+        res = []
+        for i, val in enumerate(data):
+            l.append([i, int(val[1][:-2])])
+        l = sorted(l, key = lambda x: x[1], reverse=True)
+        for val in l:
+            res.append([data2[val[0]][0][4:], data2[val[0]][1]])
+        return res[::-1]
+
+    data2 = sort_rankings(data2)
+    data = {"Stat": [x[0] for x in data2], "Rank": [x[1] for x in data2]}
+
+    df = pd.DataFrame(data, index = data["Stat"])
+    fig, ax = plt.subplots(figsize=(5,18))
+
+    #range - #1f77b4 --> #aec7e8
+    colors = ['#297db8','#3382bb','#3e88bf','#488ec3',
+            '#5294c7','#5c99ca','#679fce','#71a5d2','#7baad5',
+            '#85b0d9','#8fb6dd','#9abce1','#a4c1e4']
+
+    p1 = ax.barh(data["Stat"], data["Rank"], color = colors)
+    ax.set_title('Regular Season Rankings\n', loc='right')
+    ax.margins(x=0.1, y=0)
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    ax.spines['bottom'].set_visible(False)
+    ax.set_xticks([])
+    ax.set_xticklabels([])
+    ax.invert_yaxis()
+
+    for rect, label in zip(ax.patches, [x[1] for x in data2]):
+        height = rect.get_y() + (rect.get_height() / 2) + 0.15
+        width = rect.get_width() + rect.get_x() + 1
+        ax.text(
+            width, height, label, ha="left", va="bottom"
+        )
+
+    plt.savefig('./{}.png'.format(out_fname), dpi=300, bbox_inches='tight')
+
 
 if __name__ == "__main__":
     #out_fname = sys.argv[1]
@@ -102,10 +153,27 @@ if __name__ == "__main__":
     # shot_scatter_plot(data_fname, rink_im, event="Goal", legend_labels=["Goal", "No Goal"], colors = colors, out_fname="rink_image1")
     # shot_scatter_plot(data_fname, rink_im, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = colors, out_fname="rink_image2")
 
-    #pie plot imgs
-    shot_pie_plot(data_fname, event="Goal", legend_labels=["Scored", "Other"], colors = colors, out_fname="pie_plot1")
-    shot_pie_plot(data_fname, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = colors, out_fname="pie_plot2", color_switch=True)
+    # #pie plot imgs
+    # shot_pie_plot(data_fname, event="Goal", legend_labels=["Scored", "Other"], colors = colors, out_fname="pie_plot1")
+    # shot_pie_plot(data_fname, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = colors, out_fname="pie_plot2", color_switch=True)
 
     # #Bar plot imgs
     # by_period_bar_plot(data_fname, event="Goals", color = colors[0], out_fname="bar_plot1")
     # by_period_bar_plot(data_fname, event="Shots", color = colors[1], out_fname="bar_plot2")
+
+    #Ranking Plot
+    data2 = [['rankPowerPlayGoals', '204th'],
+        ['rankBlockedShots', '416th'],
+        ['rankAssists', '208th'],
+        ['rankShotPct', '276th'],
+        ['rankGoals', '122nd'],
+        ['rankHits', '528th'],
+        ['rankPenaltyMinutes', '325th'],
+        ['rankShortHandedGoals', '94th'],
+        ['rankPlusMinus', '635th'],
+        ['rankShots', '110th'],
+        ['rankPoints', '174th'],
+        ['rankOvertimeGoals', '102nd'],
+        ['rankGamesPlayed', '2nd']
+        ]
+    rankings_hbar_plot(data2, out_fname = "rank_hbar_plot1")

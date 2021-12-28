@@ -17,9 +17,23 @@ Canucks - 23
 
 ### Notes / To Do
 
-- I would like to only work with data in the past 10 years. Due to the vast differences in the game from 20 years ago till now, it is probably for the best.
+- PNG's seem to be loading much slower than JPG files, maybe I can convert the matplotlib figures to jpg or jpeg when I am creating the plots?
+    - Image.open('pie_plot1.png').convert('RGB').save('pie_plot1.jpg','JPEG')
 
-- Use tableau for a custom rink visualization?
+- Add an intro page (or maybe add to the cover page)
+    - URL to fetch player headshot images 
+        - https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8481535@3x.jpg
+
+- "ALL" the api functions should be updated so that we only have to call them once and then store the data in some sort of database/parquet.
+    - Call all years at once ("not by single season")
+
+    - We are only doing the current single season/single player way for small data samples.
+
+- Need to make sure shot PCT is correct. Use player stats rather than my calculations
+
+- Need to modify rankings plotting function to take a data format other than nested array
+
+- I would like to only work with data in the past 10 years. Due to the vast differences in the game from 20 years ago till now, it is probably for the best.
 
 - Need to add a more concrete way of checking inputs. 
     ie. Specify teamID, season start and end on program call.

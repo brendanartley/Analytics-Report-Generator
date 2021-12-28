@@ -5,6 +5,7 @@ pie plot height
 rink plot height
 colors
 fnames
+fonts
 ..
 
 """

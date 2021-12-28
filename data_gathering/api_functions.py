@@ -198,7 +198,7 @@ def get_player_season_goal_stats(player_id_array, season, fname):
     endpoint = "api/v1/people/{}/stats?stats=goalsByGameSituation&season="
     urls = []
 
-    stats_tracked = [
+    goal_stats_tracked = [
               'goalsInFirstPeriod',
               'goalsInSecondPeriod',
               'goalsInThirdPeriod',
@@ -244,7 +244,7 @@ def get_player_season_goal_stats(player_id_array, season, fname):
 
                 f.write(json.dumps(rj) + '\n')
 
-def get_player_season_general_stats(player_id_array, season, fname):
+def get_player_single_season_general_stats(player_id_array, season, fname):
     """
     Given an array of player_id's and a season,
     returns the general statistics for each player
@@ -316,11 +316,14 @@ def get_player_season_general_stats(player_id_array, season, fname):
                 f.write(json.dumps(rj) + '\n')
 
 
+# Need to add a function that fetches the season rankings for a player
+
+
 def main(output):
     #canucks_game_ids = game_ids(True, True, season_start=20112012, season_end=20202021, teamId=23)
     #get_all_game_event_stats([2020020663], fname=output)
 
-    get_player_season_general_stats([8481535], 20202021, "Sample")
+    get_player_single_season_general_stats([8481535], 20202021, "Sample")
     return
     
 if __name__ == '__main__':
