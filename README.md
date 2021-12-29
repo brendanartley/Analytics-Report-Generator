@@ -17,12 +17,14 @@ Canucks - 23
 
 ### Notes / To Do
 
+- Make color different for different pie plots.
+
 - PNG's seem to be loading much slower than JPG files, maybe I can convert the matplotlib figures to jpg or jpeg when I am creating the plots?
     - Image.open('pie_plot1.png').convert('RGB').save('pie_plot1.jpg','JPEG', quality=95)
 
 - Add an intro page (or maybe add to the cover page)
     - URL to fetch player headshot images 
-        - https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8481535@3x.jpg
+        - https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8481535@2x.jpg
 
 - "ALL" the api functions should be updated so that we only have to call them once and then store the data in some sort of database/parquet.
     - Call all years at once ("not by single season")

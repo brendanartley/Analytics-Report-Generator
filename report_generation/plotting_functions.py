@@ -4,6 +4,7 @@ import sys
 import os
 from PIL import Image
 import warnings
+import requests
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 plt.rcParams.update({'font.size': 22})
@@ -15,6 +16,9 @@ def shot_scatter_plot(data_fname, rink_image_fname, event, legend_labels, colors
     """
     #read data
     df = pd.read_csv(data_fname, header=0)
+    df.loc[df['x_coordinate'] >= 0, 'y_coordinate',] = -1*df["y_coordinate"]
+    df.loc[df['x_coordinate'] >= 0, 'x_coordinate',] = -1*df["x_coordinate"]
+
     rink_img = plt.imread(rink_image_fname)
 
     #plot data
@@ -31,21 +35,23 @@ def shot_scatter_plot(data_fname, rink_image_fname, event, legend_labels, colors
     plt.savefig('./{}.png'.format("./tmp/" + out_fname), dpi=300, bbox_inches='tight')
     pass
 
-def shot_pie_plot(data_fname, event, legend_labels, colors, out_fname, color_switch=False):
+def shot_pie_plot(data_fname, event, legend_labels, colors, out_fname):
 
     #read data
     df = pd.read_csv(data_fname, header=0)
-    goal_pct = round(len(df.loc[df['event'] == event]["x_coordinate"])/len(df), 3)*100
-
-    #plot colors
-    if color_switch:
-        colors = colors[::-1]
+    if event == "Goal":
+        goal_pct = round(len(df.loc[df['event'] == event]["x_coordinate"])/len(df), 3)*100
+        sa = 180
+    else:
+        goal_pct = round(len(df.loc[df['event'] != event]["x_coordinate"])/len(df), 3)*100
+        sa = 270
 
     #pie plot figure
     sizes = [goal_pct, 100-goal_pct]
     explodes = [0.25, 0]
     plt.figure(figsize=(10,10))
-    plt.pie(sizes, labels=legend_labels, explode=explodes, shadow=True, autopct='%1.1f%%', startangle=0, colors=colors, textprops={'fontsize': 22})
+    patches, texts, _ = plt.pie(sizes, explode=explodes, autopct='%1.1f%%',shadow=True, startangle=sa, colors=colors)
+    plt.legend(patches, legend_labels, loc="best", prop={'size': 22})
     plt.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
     if event == "Goal":
@@ -146,34 +152,57 @@ def rankings_hbar_plot(data2, out_fname):
     plt.savefig('./tmp/{}.png'.format(out_fname), dpi=300, bbox_inches='tight')
 
 def convert_pngs_to_jpegs(fpath = "./tmp"):
-    print(" -- Converting PNG's to JPEG's -- ")
+    """
+    Given a directory, converts all .png images
+    to JPEG's
+    """
     for img in os.listdir(fpath):
         if img[-4:] == ".png":
             Image.open('{}/{}'.format(fpath, img)).convert('RGB').save('{}/{}.jpg'.format(fpath, img[:-4]), 'JPEG', quality=95)
             os.remove('{}/{}'.format(fpath, img))
     pass
 
-if __name__ == "__main__":
+def get_player_image(player_id, fpath =  "./tmp"):
+    """
+    Downloads player image for title page
+    of the report
+    """
+    url = 'https://cms.nhl.bamgrid.com/images/headshots/current/168x168/{}@2x.jpg'.format(player_id)
+    r = requests.get(url, stream=True)
+    if r.ok:
+        Image.open(r.raw).save(fpath + "/player.jpg", 'JPEG', quality=95)
+    pass
 
+def check_tmp_directory():
+    """
+    Checks if the temporary directory has already been created
+    """
     if os.path.isdir("./tmp") and len(os.listdir("./tmp")) != 0:
         sys.exit(" ERROR:\n - Delete \"./tmp\" contents to continue -")
     else:
         if not os.path.isdir("./tmp"):
             os.mkdir("./tmp")
-        print(" -- Generating Plots -- ")
- 
+    pass
+
+if __name__ == "__main__":
+
+    # check_tmp_directory()
+    print(" --- Generating Plots --- ")
 
     data_fname = "/Users/brendanartley/dev/Sports-Analytics/raw_data/player_sample/sample.csv"
     rink_im = "/Users/brendanartley/dev/Sports-Analytics/imgs/simple_rink_grey.jpg"
     colors = ["#FFAE49", "#44B7C2"]
 
+    goal_colors = ["#88B4AA", "#e0ddbd"]
+    on_net_colors = ["#e0ddbd", "#77A6C0"]
+
     #scatter plot rink imgs
-    shot_scatter_plot(data_fname, rink_im, event="Goal", legend_labels=["Goal", "No Goal"], colors = colors, out_fname="rink_image1")
-    shot_scatter_plot(data_fname, rink_im, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = colors, out_fname="rink_image2")
+    shot_scatter_plot(data_fname, rink_im, event="Goal", legend_labels=["Goal", "No Goal"], colors = goal_colors, out_fname="rink_image1")
+    shot_scatter_plot(data_fname, rink_im, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = on_net_colors[::-1], out_fname="rink_image2")
 
     #pie plot imgs
-    shot_pie_plot(data_fname, event="Goal", legend_labels=["Scored", "Other"], colors = colors, out_fname="pie_plot1")
-    shot_pie_plot(data_fname, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = colors, out_fname="pie_plot2", color_switch=True)
+    shot_pie_plot(data_fname, event="Goal", legend_labels=["Goal", "No Goal"], colors = goal_colors, out_fname="pie_plot1")
+    shot_pie_plot(data_fname, event="Missed Shot", legend_labels=["On Net", "Missed Net"], colors = on_net_colors, out_fname="pie_plot2")
 
     #Ranking Plot
     data2 = [['rankPowerPlayGoals', '204th'],
@@ -192,4 +221,5 @@ if __name__ == "__main__":
         ]
     rankings_hbar_plot(data2, out_fname = "rank_hbar_plot1")
 
+    get_player_image(player_id=8481535, fpath =  "./tmp")
     convert_pngs_to_jpegs(fpath = "./tmp")

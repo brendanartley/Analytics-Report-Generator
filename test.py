@@ -55,7 +55,7 @@ pdf.cell(w=0, h=10, txt=pdf.organization, border=0, ln=1, align="C")
 pdf.cell(w=0, h=10, txt=pdf.player_name, border=0, ln=1, align="C")
 # need to adapt the player image so that it downloads dynamically
 # https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8481535@2x.jpg
-pdf.image('./raw_data/player_sample_img.jpeg', x = 85, y = 100, w = 40, h = 0, type = '', link = '')
+pdf.image('./raw_data/player_sample_img.jpeg', x = 85, y = 110, w = 40, h = 0, type = '', link = '')
 
 # ---------- Second Page ----------
  
@@ -87,11 +87,11 @@ table_cell_width_col2 = 20
 
  
 # Here we add more padding by passing 2*th as height
-pdf.set_fill_color(200,212,227) #(r,g,b)
+pdf.set_fill_color(189,210,236) #(r,g,b)
 pdf.cell(table_cell_width_col1, table_cell_height, "Goal Statistics", border=1, align='C', fill=True)
 pdf.cell(table_cell_width_col2, table_cell_height, "Count", border=1, ln=1, align='C', fill=True)
 
-pdf.set_fill_color(235,240,248)
+pdf.set_fill_color(235,241,249)
 for row in data:
     for i, datum in enumerate(row):
         # Enter data in colums
@@ -104,8 +104,8 @@ for row in data:
 
 WIDTH = 210
 HEIGHT = 297
-pdf.image('./tmp/pie_plot1.jpg', x = 110, y = 20, w = (WIDTH-40)//2, h = 0, type = '', link = '')
-pdf.image('./tmp/pie_plot2.jpg', x = 115, y = 95, w = (WIDTH-50)//2, h = 0, type = '', link = '')
+pdf.image('./tmp/pie_plot1.jpg', x = 120, y = 20, w = (WIDTH-60)//2, h = 0, type = '', link = '')
+pdf.image('./tmp/pie_plot2.jpg', x = 120, y = 95, w = (WIDTH-60)//2, h = 0, type = '', link = '')
 pdf.image('./tmp/rink_image1.jpg', x = 50, y = 180, w = 110, h = 0, type = '', link = '')
 
 # ---------- Third Page ----------
@@ -136,11 +136,11 @@ table_cell_width_col1 = 60
 table_cell_width_col2 = 20
 
 # Here we add more padding by passing 2*th as height
-pdf.set_fill_color(200,212,227) #(r,g,b)
+pdf.set_fill_color(189,210,236) #(r,g,b)
 pdf.cell(table_cell_width_col1, table_cell_height, "Other Statistics", border=1, align='C', fill=True)
 pdf.cell(table_cell_width_col2, table_cell_height, "Count", border=1, ln=1, align='C', fill=True)
 
-pdf.set_fill_color(235,240,248)
+pdf.set_fill_color(235,241,249)
 for row in data:
     for i, datum in enumerate(row):
         # Enter data in colums
