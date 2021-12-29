@@ -18,7 +18,7 @@ Canucks - 23
 ### Notes / To Do
 
 - PNG's seem to be loading much slower than JPG files, maybe I can convert the matplotlib figures to jpg or jpeg when I am creating the plots?
-    - Image.open('pie_plot1.png').convert('RGB').save('pie_plot1.jpg','JPEG')
+    - Image.open('pie_plot1.png').convert('RGB').save('pie_plot1.jpg','JPEG', quality=95)
 
 - Add an intro page (or maybe add to the cover page)
     - URL to fetch player headshot images 

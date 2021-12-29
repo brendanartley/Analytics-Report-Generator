@@ -1,5 +1,6 @@
 #My file
 raw_data/
+tmp/
 *.png
 .*
 

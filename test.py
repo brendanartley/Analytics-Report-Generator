@@ -23,7 +23,7 @@ class PDF(FPDF):
         elif self.page_no()==2:
             self.cell(30, 10, '{} - Goals / Shots'.format(self.player_name), 0, 0, 'C')
         elif self.page_no()==3:
-            self.cell(30, 10, '{} - Shots / Other Statistics / Ranks'.format(self.player_name), 0, 0, 'C')
+            self.cell(30, 10, '{} - Shots / Rank / Other'.format(self.player_name), 0, 0, 'C')
         # Line break
         self.ln(20)
 
@@ -55,7 +55,7 @@ pdf.cell(w=0, h=10, txt=pdf.organization, border=0, ln=1, align="C")
 pdf.cell(w=0, h=10, txt=pdf.player_name, border=0, ln=1, align="C")
 # need to adapt the player image so that it downloads dynamically
 # https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8481535@2x.jpg
-pdf.image('player_sample_img.jpeg', x = 85, y = 100, w = 40, h = 0, type = '', link = '')
+pdf.image('./raw_data/player_sample_img.jpeg', x = 85, y = 100, w = 40, h = 0, type = '', link = '')
 
 # ---------- Second Page ----------
  
@@ -104,55 +104,55 @@ for row in data:
 
 WIDTH = 210
 HEIGHT = 297
-pdf.image('pie_plot1.jpg', x = 110, y = 20, w = (WIDTH-40)//2, h = 0, type = '', link = '')
-# pdf.image('pie_plot2.png', x = 115, y = 95, w = (WIDTH-50)//2, h = 0, type = '', link = '')
-# pdf.image('rink_image1.png', x = 50, y = 180, w = 110, h = 0, type = '', link = '')
+pdf.image('./tmp/pie_plot1.jpg', x = 110, y = 20, w = (WIDTH-40)//2, h = 0, type = '', link = '')
+pdf.image('./tmp/pie_plot2.jpg', x = 115, y = 95, w = (WIDTH-50)//2, h = 0, type = '', link = '')
+pdf.image('./tmp/rink_image1.jpg', x = 50, y = 180, w = 110, h = 0, type = '', link = '')
 
-# # ---------- Third Page ----------
-# # Shot plot and other stats
-# pdf.add_page()
-# pdf.set_font('Times', '', 12)
-# pdf.ln(100)
+# ---------- Third Page ----------
+# Shot plot and other stats
+pdf.add_page()
+pdf.set_font('Times', '', 12)
+pdf.ln(100)
 
-# data =[['assists', 14],
-#       ['goals', 13],
-#       ['games', 56],
-#       ['hits', 26],
-#       ['powerPlayPoints', 1],
-#       ['penaltyMinutes', '16'],
-#       ['faceOffPct', 50.0],
-#       ['blocked', 19],
-#       ['plusMinus', -4],
-#       ['points', 27],
-#       ['shifts', 1197],
-#       ['timeOnIcePerGame', '15:26'],
-#       ['evenTimeOnIcePerGame', '13:59'],
-#       ['shortHandedTimeOnIcePerGame', '00:01'],
-#       ['powerPlayTimeOnIcePerGame', '01:25'],
-# ]
+data =[['assists', 14],
+      ['goals', 13],
+      ['games', 56],
+      ['hits', 26],
+      ['powerPlayPoints', 1],
+      ['penaltyMinutes', '16'],
+      ['faceOffPct', 50.0],
+      ['blocked', 19],
+      ['plusMinus', -4],
+      ['points', 27],
+      ['shifts', 1197],
+      ['timeOnIcePerGame', '15:26'],
+      ['evenTimeOnIcePerGame', '13:59'],
+      ['shortHandedTimeOnIcePerGame', '00:01'],
+      ['powerPlayTimeOnIcePerGame', '01:25'],
+]
 
-# table_cell_height = 9
-# table_cell_width_col1 = 60
-# table_cell_width_col2 = 20
+table_cell_height = 9
+table_cell_width_col1 = 60
+table_cell_width_col2 = 20
 
-# # Here we add more padding by passing 2*th as height
-# pdf.set_fill_color(200,212,227) #(r,g,b)
-# pdf.cell(table_cell_width_col1, table_cell_height, "Other Statistics", border=1, align='C', fill=True)
-# pdf.cell(table_cell_width_col2, table_cell_height, "Count", border=1, ln=1, align='C', fill=True)
+# Here we add more padding by passing 2*th as height
+pdf.set_fill_color(200,212,227) #(r,g,b)
+pdf.cell(table_cell_width_col1, table_cell_height, "Other Statistics", border=1, align='C', fill=True)
+pdf.cell(table_cell_width_col2, table_cell_height, "Count", border=1, ln=1, align='C', fill=True)
 
-# pdf.set_fill_color(235,240,248)
-# for row in data:
-#     for i, datum in enumerate(row):
-#         # Enter data in colums
-#         if i == 0:
-#             pdf.cell(table_cell_width_col1, table_cell_height, str(datum), border=1, fill=True)
-#         else:
-#             pdf.cell(table_cell_width_col2, table_cell_height, str(datum), border=1, align='C', fill=True)
+pdf.set_fill_color(235,240,248)
+for row in data:
+    for i, datum in enumerate(row):
+        # Enter data in colums
+        if i == 0:
+            pdf.cell(table_cell_width_col1, table_cell_height, str(datum), border=1, fill=True)
+        else:
+            pdf.cell(table_cell_width_col2, table_cell_height, str(datum), border=1, align='C', fill=True)
  
-#     pdf.ln(table_cell_height)
+    pdf.ln(table_cell_height)
 
-# pdf.image('rink_image2.png', x = 50, y = 30, w = 110, h = 0, type = '', link = '')
-# pdf.image('rank_hbar_plot1.png', x = 110, y = 130, w = 76, h = 0, type = '', link = '')
+pdf.image('./tmp/rink_image2.jpg', x = 50, y = 30, w = 110, h = 0, type = '', link = '')
+pdf.image('./tmp/rank_hbar_plot1.jpg', x = 110, y = 130, w = 76, h = 0, type = '', link = '')
 
 # ---------- Save PDF to Output ---------- 
 pdf.output('test.pdf','F')

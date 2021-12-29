@@ -1,7 +1,11 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import sys
+import os
+from PIL import Image
+import warnings
 
+warnings.filterwarnings("ignore", category=DeprecationWarning)
 plt.rcParams.update({'font.size': 22})
 
 def shot_scatter_plot(data_fname, rink_image_fname, event, legend_labels, colors, out_fname):
@@ -24,7 +28,7 @@ def shot_scatter_plot(data_fname, rink_image_fname, event, legend_labels, colors
     plt.axis('off')
 
     #need to add os call that checks if the file exists, and create DIR if not
-    plt.savefig('./{}.png'.format(out_fname), dpi=300, bbox_inches='tight')
+    plt.savefig('./{}.png'.format("./tmp/" + out_fname), dpi=300, bbox_inches='tight')
     pass
 
 def shot_pie_plot(data_fname, event, legend_labels, colors, out_fname, color_switch=False):
@@ -50,7 +54,7 @@ def shot_pie_plot(data_fname, event, legend_labels, colors, out_fname, color_swi
         plt.title("Shot on Net?")
     
     #save figure
-    plt.savefig('./{}.png'.format(out_fname), dpi=300, bbox_inches='tight')
+    plt.savefig('./{}.png'.format("./tmp/" + out_fname), dpi=300, bbox_inches='tight')
     pass
 
 def by_period_bar_plot(data_fname, event, color, out_fname):
@@ -87,7 +91,7 @@ def by_period_bar_plot(data_fname, event, color, out_fname):
     plt.yticks(fontsize=14)
 
     #save figure
-    plt.savefig('./{}.png'.format(out_fname), dpi=300, bbox_inches='tight')
+    plt.savefig('./tmp/{}.png'.format(out_fname), dpi=300, bbox_inches='tight')
     pass
 
 def rankings_hbar_plot(data2, out_fname):
@@ -139,27 +143,37 @@ def rankings_hbar_plot(data2, out_fname):
             width, height, label, ha="left", va="bottom"
         )
 
-    plt.savefig('./{}.png'.format(out_fname), dpi=300, bbox_inches='tight')
+    plt.savefig('./tmp/{}.png'.format(out_fname), dpi=300, bbox_inches='tight')
 
+def convert_pngs_to_jpegs(fpath = "./tmp"):
+    print(" -- Converting PNG's to JPEG's -- ")
+    for img in os.listdir(fpath):
+        if img[-4:] == ".png":
+            Image.open('{}/{}'.format(fpath, img)).convert('RGB').save('{}/{}.jpg'.format(fpath, img[:-4]), 'JPEG', quality=95)
+            os.remove('{}/{}'.format(fpath, img))
+    pass
 
 if __name__ == "__main__":
-    #out_fname = sys.argv[1]
+
+    if os.path.isdir("./tmp") and len(os.listdir("./tmp")) != 0:
+        sys.exit(" ERROR:\n - Delete \"./tmp\" contents to continue -")
+    else:
+        if not os.path.isdir("./tmp"):
+            os.mkdir("./tmp")
+        print(" -- Generating Plots -- ")
+ 
 
     data_fname = "/Users/brendanartley/dev/Sports-Analytics/raw_data/player_sample/sample.csv"
     rink_im = "/Users/brendanartley/dev/Sports-Analytics/imgs/simple_rink_grey.jpg"
     colors = ["#FFAE49", "#44B7C2"]
 
-    # #scatter plot rink imgs
-    # shot_scatter_plot(data_fname, rink_im, event="Goal", legend_labels=["Goal", "No Goal"], colors = colors, out_fname="rink_image1")
-    # shot_scatter_plot(data_fname, rink_im, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = colors, out_fname="rink_image2")
+    #scatter plot rink imgs
+    shot_scatter_plot(data_fname, rink_im, event="Goal", legend_labels=["Goal", "No Goal"], colors = colors, out_fname="rink_image1")
+    shot_scatter_plot(data_fname, rink_im, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = colors, out_fname="rink_image2")
 
-    # #pie plot imgs
-    # shot_pie_plot(data_fname, event="Goal", legend_labels=["Scored", "Other"], colors = colors, out_fname="pie_plot1")
-    # shot_pie_plot(data_fname, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = colors, out_fname="pie_plot2", color_switch=True)
-
-    # #Bar plot imgs
-    # by_period_bar_plot(data_fname, event="Goals", color = colors[0], out_fname="bar_plot1")
-    # by_period_bar_plot(data_fname, event="Shots", color = colors[1], out_fname="bar_plot2")
+    #pie plot imgs
+    shot_pie_plot(data_fname, event="Goal", legend_labels=["Scored", "Other"], colors = colors, out_fname="pie_plot1")
+    shot_pie_plot(data_fname, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = colors, out_fname="pie_plot2", color_switch=True)
 
     #Ranking Plot
     data2 = [['rankPowerPlayGoals', '204th'],
@@ -177,3 +191,5 @@ if __name__ == "__main__":
         ['rankGamesPlayed', '2nd']
         ]
     rankings_hbar_plot(data2, out_fname = "rank_hbar_plot1")
+
+    convert_pngs_to_jpegs(fpath = "./tmp")
