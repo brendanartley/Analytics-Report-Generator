@@ -4,14 +4,14 @@ import constants
 import json
 from tqdm import tqdm
 
-def get_game_ids(just_regular_season, filter_by_team, season_start, season_end, teamId):
+def get_game_ids(just_regular_season, filter_by_team, season_start, season_end, teamId=23):
     """
     inputs ..(just_regular_season=True, filter_by_team=False, season_start=20112012, season_end=20202021, teamId=23)
 
     Given starting season, ending season, and regular season boolean, team boolean, team id etc..
     Returns all the game_ids for specified the season range as an array/list.
 
-    season_start -> season_end is inclusive
+    - season_start and season_end are inclusive
     """
     #variables
     id_array = []
@@ -39,13 +39,10 @@ def get_game_ids(just_regular_season, filter_by_team, season_start, season_end, 
 
     return id_array
 
-
-def simple_season_game_stats(fname, season_start=20112012, season_end=20202021, just_regular_season=True):
+def simple_game_stats(fname, season_start=20112012, season_end=20202021, just_regular_season=True):
     """
     Returns scores, teams, shots for every game from 2010-2020.
     Output's json format into the raw folder
-
-    Note that asynchronous requests not implemented here
     """
 
     #URL format
@@ -66,15 +63,18 @@ def simple_season_game_stats(fname, season_start=20112012, season_end=20202021, 
 
         rj = {"gamePk":"",
               "season":"",
-              "away_team_name":"",
-              "away_team_id":"",
-              "away_team_goals":"",
-              "away_shots":"",
-              "home_team_name":"",
-              "home_team_id":"",
-              "home_team_goals":"",
-              "home_shots":""
+              "away_name":"",
+              "away_id":"",
+              "away_goals":"",
+              "away_shotsOnGoal":"",
+              "home_name":"",
+              "home_id":"",
+              "home_goals":"",
+              "home_shotsOnGoal":""
               }
+
+        stats_tracked = ["goals", "shotsOnGoal"]
+        team_info = ["id", "name"]
 
         for r in responses:
             if r.ok:
@@ -85,18 +85,23 @@ def simple_season_game_stats(fname, season_start=20112012, season_end=20202021, 
                     for j in range(len(d["dates"][i]["games"])):
                         game = d["dates"][i]["games"][j]
                         if game["status"]["abstractGameState"] == 'Final':
-                            rj["gamePk"] = game["gamePk"]
-                            rj["season"] = game["season"]
-                            rj["away_team_name"] = game["linescore"]["teams"]["away"]["team"]["name"]
-                            rj["away_team_id"] = game["linescore"]["teams"]["away"]["team"]["id"]
-                            rj["away_team_goals"] = game["linescore"]["teams"]["away"]["goals"]
-                            rj["away_shots"] = game["linescore"]["teams"]["away"]["shotsOnGoal"]
-                            rj["home_team_name"] = game["linescore"]["teams"]["home"]["team"]["name"]
-                            rj["home_team_id"] = game["linescore"]["teams"]["home"]["team"]["id"]
-                            rj["home_team_goals"] = game["linescore"]["teams"]["home"]["goals"]
-                            rj["home_shots"] = game["linescore"]["teams"]["home"]["shotsOnGoal"]
+                            if "gamePk" and "season" in game:
+                                rj["gamePk"] = game["gamePk"]
+                                rj["season"] = game["season"]
 
-                            f.write(json.dumps(rj) + '\n')
+                                for event in stats_tracked:
+                                    if event in game["linescore"]["teams"]["away"] and game["linescore"]["teams"]["home"]:
+                                        rj["away_{}".format(event)] = game["linescore"]["teams"]["away"][event]
+                                        rj["home_{}".format(event)] = game["linescore"]["teams"]["home"][event]
+                                    else:
+                                        continue
+
+                                for item in team_info:
+                                    if item in game["linescore"]["teams"]["away"]["team"] and game["linescore"]["teams"]["home"]["team"]:
+                                        rj["away_{}".format(item)] = game["linescore"]["teams"]["away"]["team"][item]
+                                        rj["home_{}".format(item)] = game["linescore"]["teams"]["home"]["team"][item]
+
+                                f.write(json.dumps(rj) + '\n')
         pass
 
 def get_all_game_event_stats(game_id_array, fname):
@@ -106,7 +111,6 @@ def get_all_game_event_stats(game_id_array, fname):
     """
     #Variables
     fname = "livefeed_" + fname
-    id_array = []
     url = constants.NHL_STATS_API
     endpoint = "api/v1/game/{}/feed/live"
 
@@ -124,7 +128,7 @@ def get_all_game_event_stats(game_id_array, fname):
     #  - need to find out who was on the ice for each event
     rj = {}
 
-    with open("../raw_data/{}.json".format(fname), 'w', encoding='utf-16') as f:
+    with open("./raw_data/{}.json".format(fname), 'w', encoding='utf-16') as f:
         for resp in tqdm(responses, desc="Writing Data to Disk"):
             if resp.ok:
                 d = resp.json()
@@ -181,12 +185,12 @@ def get_all_game_event_stats(game_id_array, fname):
             else:
                 print("{}".format(resp.status_code))
         
-        #remove the '/n' at the end of JSON file
+        #remove the '/n' at the end of written JSON file
         f.seek(0, 2) # seek to end of file
         f.seek(f.tell() - 2, 0)  # seek to the second last char of file
         f.truncate()
 
-def get_player_season_goal_stats(player_id_array, season, fname):
+def get_players_season_goal_stats(player_id_array, season, fname):
     """
     Given an array of player_id's and a season,
     returns the goal statistics for each player
@@ -235,16 +239,15 @@ def get_player_season_goal_stats(player_id_array, season, fname):
             if r.ok:
                 d = r.json()
                 rj['p_id'] = player_id_array[i]
+                if len(d["stats"][0]["splits"]) != 0:
+                    for ev in goal_stats_tracked:
+                        if ev in d["stats"][0]["splits"][0]["stat"]:
+                            rj[ev] = d["stats"][0]["splits"][0]["stat"][ev]
+                        else:
+                            rj[ev] = 0
+                    f.write(json.dumps(rj) + '\n')
 
-                for ev in goal_stats_tracked:
-                    if ev in d["stats"][0]["splits"][0]["stat"]:
-                        rj[ev] = d["stats"][0]["splits"][0]["stat"][ev]
-                    else:
-                        rj[ev] = 0
-
-                f.write(json.dumps(rj) + '\n')
-
-def get_player_single_season_general_stats(player_id_array, season, fname):
+def get_players_season_general_stats(player_id_array, season, fname):
     """
     Given an array of player_id's and a season,
     returns the general statistics for each player
@@ -258,7 +261,7 @@ def get_player_single_season_general_stats(player_id_array, season, fname):
     urls = []
 
     stats_tracked = [
-        'timeOnIce'
+        'timeOnIce',
         'assists',
         'goals',
         'pim',
@@ -307,23 +310,28 @@ def get_player_single_season_general_stats(player_id_array, season, fname):
                 d = r.json()
                 rj['p_id'] = player_id_array[i]
 
-                for ev in stats_tracked:
-                    if ev in d["stats"][0]["splits"][0]["stat"]:
-                        rj[ev] = d["stats"][0]["splits"][0]["stat"][ev]
-                    else:
-                        rj[ev] = 0
-
-                f.write(json.dumps(rj) + '\n')
+                if len(d["stats"][0]["splits"]) != 0:
+                    rj["season"] = d["stats"][0]["splits"][0]['season']
+                    for ev in stats_tracked:
+                        if ev in d["stats"][0]["splits"][0]["stat"]:
+                            rj[ev] = d["stats"][0]["splits"][0]["stat"][ev]
+                        else:
+                            rj[ev] = None
+                    
+                    f.write(json.dumps(rj) + '\n')
 
 
 # Need to add a function that fetches the season rankings for a player
 
 
 def main(output):
-    #canucks_game_ids = game_ids(True, True, season_start=20112012, season_end=20202021, teamId=23)
-    #get_all_game_event_stats([2020020663], fname=output)
+    #all_game_ids = get_game_ids(just_regular_season=True, filter_by_team=False, season_start=20112012, season_end=20202021)
+    #simple_game_stats(fname="raw", season_start=20112012, season_end=20202021, just_regular_season=True)
+    
+    #get_all_game_event_stats([2020020663,2020020664], fname="test")
+    get_players_season_goal_stats([8481535, 8478856], 20202021, "test")
 
-    get_player_single_season_general_stats([8481535], 20202021, "Sample")
+    get_players_season_general_stats([8481535, 8481536, 8478856], 20202021, "test")
     return
     
 if __name__ == '__main__':
