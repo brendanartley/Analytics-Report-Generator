@@ -3,16 +3,20 @@ import grequests
 import constants
 import json
 from tqdm import tqdm
+import re
 
 def get_game_ids(just_regular_season, filter_by_team, season_start, season_end, teamId=23):
     """
-    inputs ..(just_regular_season=True, filter_by_team=False, season_start=20112012, season_end=20202021, teamId=23)
+    inputs example ..(just_regular_season=True, filter_by_team=False, season_start=20112012, season_end=20202021, teamId=23)
 
     Given starting season, ending season, and regular season boolean, team boolean, team id etc..
     Returns all the game_ids for specified the season range as an array/list.
 
     - season_start and season_end are inclusive
     """
+    #log
+    print("\n -- Getting Game ID's -- \n")
+
     #variables
     id_array = []
     url = constants.NHL_STATS_API
@@ -26,11 +30,11 @@ def get_game_ids(just_regular_season, filter_by_team, season_start, season_end, 
         urls = [val + "&teamId={}".format(teamId) for val in urls]
 
     #making requests - 10x faster than simple requests
-    reqs = (grequests.get(u) for u in urls)
+    reqs = (grequests.get(u) for u in tqdm(urls, desc="API Requests"))
     responses = grequests.map(reqs)
 
     #Fetch ID's from json
-    for r in responses:
+    for r in tqdm(responses, desc="Writing Data to Disk"):
         if r.ok:
             d = r.json()
             for i in range(len(d["dates"])):
@@ -39,11 +43,43 @@ def get_game_ids(just_regular_season, filter_by_team, season_start, season_end, 
 
     return id_array
 
-def simple_game_stats(fname, season_start=20112012, season_end=20202021, just_regular_season=True):
+def get_all_player_ids_in_season(season_start, season_end):
+    """
+    Given a season, returns a list of all the players
+    on an NHL roster that year.
+    """
+    #log
+    print("\n -- Getting Players in Season Range -- \n")
+
+    #constants
+    url = constants.NHL_STATS_API
+    endpoint = "api/v1/teams?expand=team.roster&season="
+    urls = ["{}{}{}{}".format(url, endpoint, i, i+1) for i in range(season_start // 10000, (season_end // 10000)+1)]
+    players = set()
+
+    #making requests
+    reqs = (grequests.get(u) for u in tqdm(urls, desc="API Requests"))
+    responses = grequests.map(reqs)
+
+    #writing data to file
+    for r in tqdm(responses, desc="Writing Data to Disk"):
+        if r.ok:
+            d = r.json()
+            for i in range(len(d['teams'])):
+                team_data = d['teams'][i]
+                for player in team_data['roster']['roster']:
+                    if "person" in player and "id" in player["person"]:
+                        players.add(player["person"]["id"])
+
+    return list(players)
+
+def simple_game_stats(fname, season_start, season_end, just_regular_season=True):
     """
     Returns scores, teams, shots for every game from 2010-2020.
     Output's json format into the raw folder
     """
+    #log
+    print("\n -- Getting Simple Game Stats -- \n")
 
     #URL format
     fname = "linescore_" + fname
@@ -56,7 +92,7 @@ def simple_game_stats(fname, season_start=20112012, season_end=20202021, just_re
         urls = [x + "&gameType=R" for x in urls]
 
     #making requests
-    reqs = (grequests.get(u) for u in urls)
+    reqs = (grequests.get(u) for u in tqdm(urls, desc="API Requests"))
     responses = grequests.map(reqs)
 
     with open("./raw_data/{}.json".format(fname), 'w', encoding='utf-16') as f:
@@ -76,7 +112,7 @@ def simple_game_stats(fname, season_start=20112012, season_end=20202021, just_re
         stats_tracked = ["goals", "shotsOnGoal"]
         team_info = ["id", "name"]
 
-        for r in responses:
+        for r in tqdm(responses, desc="Writing Data to Disk"):
             if r.ok:
                 d = r.json()
 
@@ -109,6 +145,9 @@ def get_all_game_event_stats(game_id_array, fname):
     Given a list of game ID's, returns raw event data for each game
     in a format suitable for pyspark.
     """
+    #log
+    print("\n -- Getting All Game Events -- \n")
+
     #Variables
     fname = "livefeed_" + fname
     url = constants.NHL_STATS_API
@@ -190,17 +229,24 @@ def get_all_game_event_stats(game_id_array, fname):
         f.seek(f.tell() - 2, 0)  # seek to the second last char of file
         f.truncate()
 
-def get_players_season_goal_stats(player_id_array, season, fname):
+def get_players_season_goal_stats(player_id_array, season_start, season_end, fname, just_regular_season=True):
     """
     Given an array of player_id's and a season,
     returns the goal statistics for each player
     in JSON format.
     """
+    #log
+    print("\n -- Getting Player Goal Stats -- \n")
+
     #constants
     fname = "goalsByGameSituationStats_" + fname
     url = constants.NHL_STATS_API
     endpoint = "api/v1/people/{}/stats?stats=goalsByGameSituation&season="
     urls = []
+
+    url_format = ["{}{}{}{}".format(url, endpoint, i, i+1) for i in range(season_start // 10000, (season_end // 10000)+1)]
+    if just_regular_season:
+        url_format = [x + "&gameType=R" for x in url_format]
 
     goal_stats_tracked = [
               'goalsInFirstPeriod',
@@ -222,10 +268,11 @@ def get_players_season_goal_stats(player_id_array, season, fname):
 
     #Creating each individual URL
     for p_id in player_id_array:
-        urls.append(url + endpoint.format(str(p_id)) + str(season))
+        for url in url_format:
+            urls.append(url.format(p_id))
 
     #making requests
-    reqs = (grequests.get(u) for u in urls)
+    reqs = (grequests.get(u) for u in tqdm(urls, desc="API Requests"))
     responses = grequests.map(reqs)
 
     #writing data to file
@@ -235,10 +282,11 @@ def get_players_season_goal_stats(player_id_array, season, fname):
         for event in goal_stats_tracked:
             rj[event] = ""
 
-        for i, r in enumerate(responses):
+        for r in tqdm(responses, desc="Writing Data to Disk"):
             if r.ok:
                 d = r.json()
-                rj['p_id'] = player_id_array[i]
+                rj['p_id'] = int(re.findall(r'[//][0-9]+', r.url)[0][1:])
+                rj['season'] = re.findall(r'\d+', r.url)[-1]
                 if len(d["stats"][0]["splits"]) != 0:
                     for ev in goal_stats_tracked:
                         if ev in d["stats"][0]["splits"][0]["stat"]:
@@ -247,18 +295,25 @@ def get_players_season_goal_stats(player_id_array, season, fname):
                             rj[ev] = 0
                     f.write(json.dumps(rj) + '\n')
 
-def get_players_season_general_stats(player_id_array, season, fname):
+def get_players_season_general_stats(player_id_array, season_start, season_end, fname, just_regular_season=True):
     """
     Given an array of player_id's and a season,
     returns the general statistics for each player
     in JSON format.
     """
+    #log
+    print("\n -- Getting Player General Stats -- \n")
+
     
     #constants
     fname = "statsSingleSeason_" + fname
     url = constants.NHL_STATS_API
     endpoint = "api/v1/people/{}/stats?stats=statsSingleSeason&season="
     urls = []
+    
+    url_format = ["{}{}{}{}".format(url, endpoint, i, i+1) for i in range(season_start // 10000, (season_end // 10000)+1)]
+    if just_regular_season:
+        url_format = [x + "&gameType=R" for x in url_format]
 
     stats_tracked = [
         'timeOnIce',
@@ -292,23 +347,84 @@ def get_players_season_general_stats(player_id_array, season, fname):
 
     #Creating each individual URL
     for p_id in player_id_array:
-        urls.append(url + endpoint.format(str(p_id)) + str(season))
+        for url in url_format:
+            urls.append(url.format(p_id))
 
     #making requests
-    reqs = (grequests.get(u) for u in urls)
+    reqs = (grequests.get(u) for u in tqdm(urls, desc="API Requests"))
+    responses = grequests.map(reqs)
+
+    #writing data to file
+    with open("./raw_data/{}.json".format(fname), 'w', encoding='utf-16') as f:
+
+        rj = {}
+
+        for r in tqdm(responses, desc="Writing Data to Disk"):
+            if r.ok:
+                d = r.json()
+                rj['p_id'] = int(re.findall(r'[//][0-9]+', r.url)[0][1:])
+                if len(d["stats"][0]["splits"]) != 0:
+                    rj["season"] = d["stats"][0]["splits"][0]['season']
+                    for ev in stats_tracked:
+                        if ev in d["stats"][0]["splits"][0]["stat"]:
+                            rj[ev] = d["stats"][0]["splits"][0]["stat"][ev]
+                        else:
+                            rj[ev] = None
+                    
+                    f.write(json.dumps(rj) + '\n')
+
+def get_players_season_stat_rankings(player_id_array, season_start, season_end, fname, just_regular_season=True):
+    """
+    Given an array of player_id's and a season,
+    returns the rankings across numerous statisitcs
+    for each player in a JSON format.
+    """
+    #log
+    print("\n -- Getting Player Rankings -- \n")
+    
+    #constants
+    fname = "regularSeasonStatRankings_" + fname
+    url = constants.NHL_STATS_API
+    endpoint = "api/v1/people/{}/stats?stats=regularSeasonStatRankings&season="
+    urls = []
+
+    url_format = ["{}{}{}{}".format(url, endpoint, i, i+1) for i in range(season_start // 10000, (season_end // 10000)+1)]
+    if just_regular_season:
+        url_format = [x + "&gameType=R" for x in url_format]
+
+    stats_tracked = ['rankPowerPlayGoals',
+                     'rankBlockedShots',
+                     'rankAssists',
+                     'rankShotPct',
+                     'rankGoals',
+                     'rankHits',
+                     'rankPenaltyMinutes',
+                     'rankShortHandedGoals',
+                     'rankPlusMinus',
+                     'rankShots',
+                     'rankPoints',
+                     'rankOvertimeGoals',
+                     'rankGamesPlayed',
+                    ]
+
+    #Creating each individual URL
+    for p_id in player_id_array:
+        for url in url_format:
+            urls.append(url.format(p_id))
+
+    #making requests
+    reqs = (grequests.get(u) for u in tqdm(urls, desc="API Requests"))
     responses = grequests.map(reqs)
 
     #writing data to file
     with open("./raw_data/{}.json".format(fname), 'w', encoding='utf-16') as f:
         
         rj = {}
-        for event in stats_tracked:
-            rj[event] = ""
 
-        for i, r in enumerate(responses):
+        for r in tqdm(responses, desc="Writing Data to Disk"):
             if r.ok:
                 d = r.json()
-                rj['p_id'] = player_id_array[i]
+                rj['p_id'] = int(re.findall(r'[//][0-9]+', r.url)[0][1:])
 
                 if len(d["stats"][0]["splits"]) != 0:
                     rj["season"] = d["stats"][0]["splits"][0]['season']
@@ -320,18 +436,20 @@ def get_players_season_general_stats(player_id_array, season, fname):
                     
                     f.write(json.dumps(rj) + '\n')
 
-
-# Need to add a function that fetches the season rankings for a player
-
-
 def main(output):
-    #all_game_ids = get_game_ids(just_regular_season=True, filter_by_team=False, season_start=20112012, season_end=20202021)
-    #simple_game_stats(fname="raw", season_start=20112012, season_end=20202021, just_regular_season=True)
-    
-    #get_all_game_event_stats([2020020663,2020020664], fname="test")
-    get_players_season_goal_stats([8481535, 8478856], 20202021, "test")
 
-    get_players_season_general_stats([8481535, 8481536, 8478856], 20202021, "test")
+    ss = 20112012
+    se = 20202021
+
+    all_game_ids = get_game_ids(just_regular_season=True, filter_by_team=False, season_start=ss, season_end=se)
+    all_player_ids = get_all_player_ids_in_season(season_start=ss, season_end=ss)
+
+    simple_game_stats(fname=output, season_start=ss, season_end=se, just_regular_season=True)
+    get_all_game_event_stats(all_game_ids, fname=output)
+    get_players_season_goal_stats(all_player_ids, season_start=ss, season_end=se, fname=output)
+
+    get_players_season_general_stats(all_player_ids, season_start=ss, season_end=se, fname=output)
+    get_players_season_stat_rankings(all_player_ids, season_start=ss, season_end=se, fname = output)
     return
     
 if __name__ == '__main__':
