@@ -223,3 +223,5 @@ if __name__ == "__main__":
 
     get_player_image(player_id=8481535, fpath =  "./tmp")
     convert_pngs_to_jpegs(fpath = "./tmp")
+
+

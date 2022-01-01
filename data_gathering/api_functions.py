@@ -43,7 +43,7 @@ def get_game_ids(just_regular_season, filter_by_team, season_start, season_end, 
 
     return id_array
 
-def get_all_player_ids_in_season(season_start, season_end):
+def get_all_player_ids_in_range(season_start, season_end):
     """
     Given a season, returns a list of all the players
     on an NHL roster that year.
@@ -393,7 +393,7 @@ def get_players_season_general_stats(player_id_array, season_start, season_end, 
         f.seek(f.tell() - 2, 0)  # seek to the second last char of file
         f.truncate()
 
-def get_players_season_stat_rankings(player_id_array, season_start, season_end, fname, just_regular_season=True):
+def get_players_season_stat_rankings(player_id_array, season_start, season_end, fname):
     """
     Given an array of player_id's and a season,
     returns the rankings across numerous statisitcs
@@ -409,8 +409,6 @@ def get_players_season_stat_rankings(player_id_array, season_start, season_end, 
     urls = []
 
     url_format = ["{}{}{}{}".format(url, endpoint, i, i+1) for i in range(season_start // 10000, (season_end // 10000)+1)]
-    if just_regular_season:
-        url_format = [x + "&gameType=R" for x in url_format]
 
     stats_tracked = ['rankPowerPlayGoals',
                      'rankBlockedShots',
@@ -466,21 +464,21 @@ def get_players_season_stat_rankings(player_id_array, season_start, season_end, 
 
 def main(output):
 
-    # ss = 20112012
-    # se = 20202021
+    ss = 20112012
+    se = 20202021
 
-    # #get ids
-    # all_game_ids = get_game_ids(just_regular_season=True, filter_by_team=False, season_start=ss, season_end=se)
-    # all_player_ids = get_all_player_ids_in_season(season_start=ss, season_end=ss)
+    #get ids
+    all_game_ids = get_game_ids(just_regular_season=True, filter_by_team=False, season_start=ss, season_end=se)
+    all_player_ids = get_all_player_ids_in_range(season_start=ss, season_end=se)
 
-    # #game events + stats
-    # simple_game_stats(fname=output, season_start=ss, season_end=se, just_regular_season=True)
-    # get_all_game_event_stats(all_game_ids, fname=output)
+    #game events + stats
+    simple_game_stats(fname=output, season_start=ss, season_end=se, just_regular_season=True)
+    get_all_game_event_stats(all_game_ids, fname=output)
     
-    # #player_stats
-    # get_players_season_goal_stats(all_player_ids, season_start=ss, season_end=se, fname=output)
-    # get_players_season_general_stats(all_player_ids, season_start=ss, season_end=se, fname=output)
-    # get_players_season_stat_rankings(all_player_ids, season_start=ss, season_end=se, fname = output)
+    #player_stats
+    get_players_season_goal_stats(all_player_ids, season_start=ss, season_end=se, fname=output)
+    get_players_season_general_stats(all_player_ids, season_start=ss, season_end=se, fname=output)
+    get_players_season_stat_rankings(all_player_ids, season_start=ss, season_end=se, fname = output)
     return
     
 if __name__ == '__main__':
