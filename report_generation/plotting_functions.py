@@ -187,7 +187,7 @@ def generate_all_plots(p_id, season):
     check_tmp_directory()
     print(" --- Querying Data --- ")
 
-    player_df, rank_list, goal_stats_list = report_generation.data_query.query(p_id, season)
+    player_df, rank_list, goal_stats_list, player_info, player_stats_list = report_generation.data_query.query(p_id, season)
     # add check to see if player not found in that season
     print(" --- Generating Plots --- ")
 
@@ -210,4 +210,4 @@ def generate_all_plots(p_id, season):
     get_player_image(player_id=p_id, fpath =  "./tmp")
     convert_pngs_to_jpegs(fpath = "./tmp")
 
-    return rank_list, goal_stats_list
+    return goal_stats_list, player_info, player_stats_list

@@ -31,9 +31,27 @@ def query(p_id, season):
     #player goal stats
     goal_stats_df = spark.read.parquet("./raw_data/parquet/goalsByGameSituationStats_p2")
     goal_stats_df = goal_stats_df.where((goal_stats_df["p_id"] == p_id) & (goal_stats_df["season"] == season))
-    goal_stats_list = [[col,rank_df.take(1)[0][col]] for col in rank_df.columns if col not in ["p_id", "season"]]
+    goal_stats_list = [[col,goal_stats_df.take(1)[0][col]] for col in goal_stats_df.columns if col not in ["p_id", "season"]]
 
-    return player_df.toPandas(), rank_list, goal_stats_list
+    #player other stats
+    p_stats_df = spark.read.parquet("./raw_data/parquet/statsSingleSeason_p2")
+    p_stats_df =  p_stats_df.where((p_stats_df["p_id"] == p_id) & (p_stats_df["season"] == season))
+
+    stats = ['assists', 'goals', 'games', 'hits', 'powerPlayPoints', 
+             'penaltyMinutes', 'faceOffPct', 'blocked', 'plusMinus', 
+            'points', 'shifts', 'timeOnIcePerGame', 'evenTimeOnIcePerGame', 
+            'shortHandedTimeOnIcePerGame', 'powerPlayTimeOnIcePerGame']
+
+    player_stats_list = [[col,p_stats_df.take(1)[0][col]] for col in p_stats_df.columns if col in stats]
+
+    #player information
+    p_info_df = spark.read.parquet("./raw_data/parquet/yearByYear_p2")
+    p_info_df = (p_info_df.where((p_info_df["p_id"] == p_id) & 
+                                          (p_info_df["season"] == season))
+                                           .orderBy(p_info_df["team_num_this_season"], ascending=False))
+    player_info = {col:p_info_df.take(1)[0][col] for col in p_info_df.columns}
+
+    return player_df.toPandas(), rank_list, goal_stats_list, player_info, player_stats_list
 
 # if __name__ == 'query_data':
 #     spark = SparkSession.builder.appName('example code').getOrCreate()

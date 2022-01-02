@@ -1,5 +1,6 @@
 import sys
 import grequests
+from pkg_resources import EntryPoint
 import constants
 import json
 from tqdm import tqdm
@@ -397,7 +398,7 @@ def get_players_season_general_stats(player_id_array, season_start, season_end, 
 
 def get_players_season_stat_rankings(player_id_array, season_start, season_end, fname):
     """
-    Given an array of player_id's and a season,
+    Given an array of player_id's and a season range,
     returns the rankings across numerous statisitcs
     for each player in a JSON format.
     """
@@ -464,6 +465,74 @@ def get_players_season_stat_rankings(player_id_array, season_start, season_end, 
         f.seek(f.tell() - 2, 0)  # seek to the second last char of file
         f.truncate()
 
+def get_players_info_by_season(player_id_array, fname):
+    """
+    Given an array of player_id's and a season range,
+    returns player info by season for each player in a 
+    JSON format.
+    """
+    #log
+    print("\n -- Getting Player Info -- \n")
+    
+    #constants
+    fname = "yearByYear_" + fname
+    url = constants.NHL_STATS_API
+    endpoint = "api/v1/people/{}"
+    endpoint2 = "api/v1/people/{}/stats?stats=yearByYear"
+    urls = []
+
+    #Creating each individual URL
+    for p_id in player_id_array:
+        urls.append(url + endpoint.format(p_id))
+        urls.append(url + endpoint2.format(p_id))
+    
+    #writing data to file
+    with open("./raw_data/{}.json".format(fname), 'w', encoding='utf-16') as f:
+        rj = {}
+
+        #Doing API calls in batches
+        for b in tqdm(range(0, len(urls), 100), desc="Iterating Batches"):
+            batch = urls[b:b+100]
+
+            #making requests
+            reqs = (grequests.get(u) for u in batch)
+            responses = grequests.map(reqs)
+
+            for i in range (0, len(responses), 2):
+                r = responses[i]
+                r2 = responses[i+1]
+                if r is not None and r.ok and r.json() is not None:
+                    d = r.json()
+                    if "people" in d:
+                        rj["p_id"] = d["people"][0]["id"]
+                        rj["fullName"] = d["people"][0]["fullName"]
+
+                        if r2 is not None and r2.ok and r2.json() is not None:
+                            d2 = r2.json()
+                            if "stats" in d2 and "splits" in d2["stats"][0]:
+                                season_counter = 0
+                                last_season = ""
+                                for split in d2["stats"][0]["splits"]:
+                                    if split["league"]["name"] == "National Hockey League":
+                                        if split["season"] == last_season:
+                                            season_counter += 1
+                                        else:
+                                            season_counter = 0
+
+                                        rj["team_id"] = split["team"]["id"]
+                                        rj["team_name"] = split["team"]["name"]
+                                        rj["season"] = split["season"]
+                                        rj["team_num_this_season"] = season_counter
+
+                                        last_season = split["season"]
+                                        f.write(json.dumps(rj) + '\n')
+
+        #remove the '/n' at the end of written JSON file
+        f.seek(0, 2) # seek to end of file
+        f.seek(f.tell() - 2, 0)  # seek to the second last char of file
+        f.truncate()
+    
+
 def main(output):
 
     ss = 20112012
@@ -481,6 +550,8 @@ def main(output):
     get_players_season_goal_stats(all_player_ids, season_start=ss, season_end=se, fname=output)
     get_players_season_general_stats(all_player_ids, season_start=ss, season_end=se, fname=output)
     get_players_season_stat_rankings(all_player_ids, season_start=ss, season_end=se, fname = output)
+
+    get_players_info_by_season(all_player_ids, fname = output)
     return
     
 if __name__ == '__main__':
