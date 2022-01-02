@@ -5,17 +5,17 @@ import os
 from PIL import Image
 import warnings
 import requests
+import query_data
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 plt.rcParams.update({'font.size': 22})
 
-def shot_scatter_plot(data_fname, rink_image_fname, event, legend_labels, colors, out_fname):
+def shot_scatter_plot(df, rink_image_fname, event, legend_labels, colors, out_fname):
     """
     Given a list of parameters, creates shot plot and saves 
     image to temporary file before being added to report.
     """
     #read data
-    df = pd.read_csv(data_fname, header=0)
     df.loc[df['x_coordinate'] >= 0, 'y_coordinate',] = -1*df["y_coordinate"]
     df.loc[df['x_coordinate'] >= 0, 'x_coordinate',] = -1*df["x_coordinate"]
 
@@ -35,10 +35,9 @@ def shot_scatter_plot(data_fname, rink_image_fname, event, legend_labels, colors
     plt.savefig('./{}.png'.format("./tmp/" + out_fname), dpi=300, bbox_inches='tight')
     pass
 
-def shot_pie_plot(data_fname, event, legend_labels, colors, out_fname):
+def shot_pie_plot(df, event, legend_labels, colors, out_fname):
 
-    #read data
-    df = pd.read_csv(data_fname, header=0)
+    #preprocess data
     if event == "Goal":
         goal_pct = round(len(df.loc[df['event'] == event]["x_coordinate"])/len(df), 3)*100
         sa = 180
@@ -63,7 +62,7 @@ def shot_pie_plot(data_fname, event, legend_labels, colors, out_fname):
     plt.savefig('./{}.png'.format("./tmp/" + out_fname), dpi=300, bbox_inches='tight')
     pass
 
-def by_period_bar_plot(data_fname, event, color, out_fname):
+def by_period_bar_plot(df, event, color, out_fname):
     """
     Given a dataframe, returns a matplotlib bar plot of
     the number of goals scored each period
@@ -71,8 +70,7 @@ def by_period_bar_plot(data_fname, event, color, out_fname):
     if event != "Goals" and event != "Shots":
         sys.exit(" ---------- Invalid Event: {} ---------- ".format(event))
 
-    #loading + processing data
-    df = pd.read_csv(data_fname, header=0)
+    #processing data
     if event == "Goals":
         goal_dict = dict(df.loc[(df["event"] == "Goal") & (df["period"].isin([1,2,3]))]["period"].value_counts().sort_index())
     else:
@@ -189,39 +187,24 @@ if __name__ == "__main__":
     # check_tmp_directory()
     print(" --- Generating Plots --- ")
 
-    data_fname = "/Users/brendanartley/dev/Sports-Analytics/raw_data/player_sample/sample.csv"
+    player_df = query_data.player_df
+    rank_list = query_data.rank_list
+
     rink_im = "/Users/brendanartley/dev/Sports-Analytics/imgs/simple_rink_grey.jpg"
-    colors = ["#FFAE49", "#44B7C2"]
 
     goal_colors = ["#88B4AA", "#e0ddbd"]
     on_net_colors = ["#e0ddbd", "#77A6C0"]
 
     #scatter plot rink imgs
-    shot_scatter_plot(data_fname, rink_im, event="Goal", legend_labels=["Goal", "No Goal"], colors = goal_colors, out_fname="rink_image1")
-    shot_scatter_plot(data_fname, rink_im, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = on_net_colors[::-1], out_fname="rink_image2")
+    shot_scatter_plot(player_df, rink_im, event="Goal", legend_labels=["Goal", "No Goal"], colors = goal_colors, out_fname="rink_image1")
+    shot_scatter_plot(player_df, rink_im, event="Missed Shot", legend_labels=["Missed Net", "On Net"], colors = on_net_colors[::-1], out_fname="rink_image2")
 
     #pie plot imgs
-    shot_pie_plot(data_fname, event="Goal", legend_labels=["Goal", "No Goal"], colors = goal_colors, out_fname="pie_plot1")
-    shot_pie_plot(data_fname, event="Missed Shot", legend_labels=["On Net", "Missed Net"], colors = on_net_colors, out_fname="pie_plot2")
+    shot_pie_plot(player_df, event="Goal", legend_labels=["Goal", "No Goal"], colors = goal_colors, out_fname="pie_plot1")
+    shot_pie_plot(player_df, event="Missed Shot", legend_labels=["On Net", "Missed Net"], colors = on_net_colors, out_fname="pie_plot2")
 
-    #Ranking Plot
-    data2 = [['rankPowerPlayGoals', '204th'],
-        ['rankBlockedShots', '416th'],
-        ['rankAssists', '208th'],
-        ['rankShotPct', '276th'],
-        ['rankGoals', '122nd'],
-        ['rankHits', '528th'],
-        ['rankPenaltyMinutes', '325th'],
-        ['rankShortHandedGoals', '94th'],
-        ['rankPlusMinus', '635th'],
-        ['rankShots', '110th'],
-        ['rankPoints', '174th'],
-        ['rankOvertimeGoals', '102nd'],
-        ['rankGamesPlayed', '2nd']
-        ]
-    rankings_hbar_plot(data2, out_fname = "rank_hbar_plot1")
+    #rank plot
+    rankings_hbar_plot(rank_list, out_fname = "rank_hbar_plot1")
 
     get_player_image(player_id=8481535, fpath =  "./tmp")
     convert_pngs_to_jpegs(fpath = "./tmp")
-
-

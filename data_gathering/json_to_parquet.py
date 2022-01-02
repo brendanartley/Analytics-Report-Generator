@@ -4,10 +4,12 @@ import os
 
 from pyspark.sql import SparkSession, functions, types #type:ignore
 
-def main(inputs):
+def main():
     """
     Converting the JSON Data to Parquet 
     """
+    inputs = "./raw_data/"
+
     for file in os.listdir(inputs):
         if file[-5:] == ".json":
             df = spark.read.json(inputs + file)
@@ -15,9 +17,8 @@ def main(inputs):
     pass
 
 if __name__ == '__main__':
-    inputs = sys.argv[1]
     spark = SparkSession.builder.appName('example code').getOrCreate()
     assert spark.version >= '3.0' # make sure we have Spark 3.0+
     spark.sparkContext.setLogLevel('WARN')
     sc = spark.sparkContext
-    main(inputs)
+    main()

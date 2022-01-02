@@ -55,7 +55,7 @@ pdf.cell(w=0, h=10, txt=pdf.organization, border=0, ln=1, align="C")
 pdf.cell(w=0, h=10, txt=pdf.player_name, border=0, ln=1, align="C")
 # need to adapt the player image so that it downloads dynamically
 # https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8481535@2x.jpg
-pdf.image('./raw_data/player_sample_img.jpeg', x = 85, y = 110, w = 40, h = 0, type = '', link = '')
+pdf.image('./tmp/player.jpg', x = 85, y = 110, w = 40, h = 0, type = '', link = '')
 
 # ---------- Second Page ----------
  
