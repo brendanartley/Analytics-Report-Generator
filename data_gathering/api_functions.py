@@ -184,6 +184,8 @@ def get_all_game_event_stats(game_id_array, fname):
                     else:
                         continue
 
+                    rj["season"] = d["gameData"]['game']['season']
+
                     for val in d["liveData"]["plays"]["allPlays"]:
 
                         rj["event"] = val["result"]["event"]

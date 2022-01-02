@@ -5,7 +5,7 @@ import os
 from PIL import Image
 import warnings
 import requests
-import query_data
+import report_generation.data_query
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 plt.rcParams.update({'font.size': 22})
@@ -182,13 +182,14 @@ def check_tmp_directory():
             os.mkdir("./tmp")
     pass
 
-if __name__ == "__main__":
+def generate_all_plots(p_id, season):
 
-    # check_tmp_directory()
+    check_tmp_directory()
+    print(" --- Querying Data --- ")
+
+    player_df, rank_list, goal_stats_list = report_generation.data_query.query(p_id, season)
+    # add check to see if player not found in that season
     print(" --- Generating Plots --- ")
-
-    player_df = query_data.player_df
-    rank_list = query_data.rank_list
 
     rink_im = "/Users/brendanartley/dev/Sports-Analytics/imgs/simple_rink_grey.jpg"
 
@@ -206,5 +207,7 @@ if __name__ == "__main__":
     #rank plot
     rankings_hbar_plot(rank_list, out_fname = "rank_hbar_plot1")
 
-    get_player_image(player_id=8481535, fpath =  "./tmp")
+    get_player_image(player_id=p_id, fpath =  "./tmp")
     convert_pngs_to_jpegs(fpath = "./tmp")
+
+    return rank_list, goal_stats_list

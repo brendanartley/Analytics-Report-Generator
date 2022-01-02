@@ -1,5 +1,14 @@
 # Import FPDF class
 from fpdf import FPDF
+import report_generation.plotting_functions
+import os
+
+#crosby - 8471675
+
+p_id = 8471675
+season = 20202021
+
+rank_list, goal_stats_list = report_generation.plotting_functions.generate_all_plots(p_id = p_id, season = season)
 
 class PDF(FPDF):
 
@@ -53,8 +62,6 @@ pdf.cell(w=0, h=10, txt="Annual Player Report", border=0, ln=1, align="C")
 pdf.cell(w=0, h=10, txt=pdf.season[:4] + " / " + pdf.season[4:], border=0, ln=1, align="C")
 pdf.cell(w=0, h=10, txt=pdf.organization, border=0, ln=1, align="C")
 pdf.cell(w=0, h=10, txt=pdf.player_name, border=0, ln=1, align="C")
-# need to adapt the player image so that it downloads dynamically
-# https://cms.nhl.bamgrid.com/images/headshots/current/168x168/8481535@2x.jpg
 pdf.image('./tmp/player.jpg', x = 85, y = 110, w = 40, h = 0, type = '', link = '')
 
 # ---------- Second Page ----------
@@ -92,7 +99,7 @@ pdf.cell(table_cell_width_col1, table_cell_height, "Goal Statistics", border=1, 
 pdf.cell(table_cell_width_col2, table_cell_height, "Count", border=1, ln=1, align='C', fill=True)
 
 pdf.set_fill_color(235,241,249)
-for row in data:
+for row in goal_stats_list:
     for i, datum in enumerate(row):
         # Enter data in colums
         if i == 0:
@@ -114,23 +121,6 @@ pdf.add_page()
 pdf.set_font('Times', '', 12)
 pdf.ln(100)
 
-data =[['assists', 14],
-      ['goals', 13],
-      ['games', 56],
-      ['hits', 26],
-      ['powerPlayPoints', 1],
-      ['penaltyMinutes', '16'],
-      ['faceOffPct', 50.0],
-      ['blocked', 19],
-      ['plusMinus', -4],
-      ['points', 27],
-      ['shifts', 1197],
-      ['timeOnIcePerGame', '15:26'],
-      ['evenTimeOnIcePerGame', '13:59'],
-      ['shortHandedTimeOnIcePerGame', '00:01'],
-      ['powerPlayTimeOnIcePerGame', '01:25'],
-]
-
 table_cell_height = 9
 table_cell_width_col1 = 60
 table_cell_width_col2 = 20
@@ -141,7 +131,7 @@ pdf.cell(table_cell_width_col1, table_cell_height, "Other Statistics", border=1,
 pdf.cell(table_cell_width_col2, table_cell_height, "Count", border=1, ln=1, align='C', fill=True)
 
 pdf.set_fill_color(235,241,249)
-for row in data:
+for row in rank_list:
     for i, datum in enumerate(row):
         # Enter data in colums
         if i == 0:
@@ -153,6 +143,9 @@ for row in data:
 
 pdf.image('./tmp/rink_image2.jpg', x = 50, y = 30, w = 110, h = 0, type = '', link = '')
 pdf.image('./tmp/rank_hbar_plot1.jpg', x = 110, y = 130, w = 76, h = 0, type = '', link = '')
+
+for file in os.listdir("./tmp"):
+    os.remove("./tmp/" + file)
 
 # ---------- Save PDF to Output ---------- 
 pdf.output('test.pdf','F')
