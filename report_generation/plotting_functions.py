@@ -207,7 +207,10 @@ def generate_all_plots(p_id, season):
     #rank plot
     rankings_hbar_plot(rank_list, out_fname = "rank_hbar_plot1")
 
-    get_player_image(player_id=p_id, fpath =  "./tmp")
+    #getting player + team image
+    get_player_image(player_id = p_id)
+
+    #converting formats to jpegs
     convert_pngs_to_jpegs(fpath = "./tmp")
 
     return goal_stats_list, player_info, player_stats_list

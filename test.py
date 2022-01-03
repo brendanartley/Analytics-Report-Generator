@@ -6,23 +6,24 @@ import os
 #crosby - 8471675
 #schenn - 8474568
 
-p_id = 8474568
+p_id = 8471675
 season = 20202021
 
 goal_stats_list, player_info, player_stats_list = report_generation.plotting_functions.generate_all_plots(p_id = p_id, season = season)
 
 class PDF(FPDF):
 
-    def __init__(self, player_name, season, organization):
+    def __init__(self, player_name, season, organization, team_id):
         FPDF.__init__(self) #initializes parent class
         self.player_name = player_name
         self.season = season
         self.organization = organization
+        self.team_id = team_id
 
     def header(self):
         # Logo (name, x, y, w = 0, h = 0)
         # w,h = 0 means automatic
-        self.image('./imgs/canucks_logo.png', 10, 8, 15, 0)
+        self.image('./imgs/team_logos/{}.jpg'.format(self.team_id), 10, 8, 15, 0)
         # font (font,bold,size)
         self.set_font('Arial', 'B', 15)
         # Move to the right
@@ -48,7 +49,7 @@ class PDF(FPDF):
             self.cell(0, 10, 'Page ' + str(self.page_no()-1), 0, 0, 'R')
 
 # ----------  Instantiation of Inherited Class ----------
-pdf = PDF(player_info["fullName"], player_info["season"], player_info["team_name"])
+pdf = PDF(player_info["fullName"], player_info["season"], player_info["team_name"], player_info["team_id"])
 pdf.alias_nb_pages()
 
 # ---------- First Page ----------
@@ -124,6 +125,7 @@ for row in player_stats_list:
 pdf.image('./tmp/rink_image2.jpg', x = 50, y = 30, w = 110, h = 0, type = '', link = '')
 pdf.image('./tmp/rank_hbar_plot1.jpg', x = 110, y = 130, w = 76, h = 0, type = '', link = '')
 
+# Clear tmp directory
 for file in os.listdir("./tmp"):
     os.remove("./tmp/" + file)
 
