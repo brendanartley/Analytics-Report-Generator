@@ -1,16 +1,16 @@
-# Automatic Analytics Report Generator
+# Analytics Report Generator
 
 ## Overview / Purpose
 
 The generated report is meant to provide coaches and players with a snapshot of their overall performance for a given season. The report can also be used by opposing teams to get a sense of where specific players are threatening in the offensive zone. This can be useful in guiding player development or preparing players for likely matchups in upcoming games.
 
-Report Sample
-
-<img src="./imgs/readme_imgs/report_sample1.jpg" width="210" height="297">
-<img src="./imgs/readme_imgs/report_sample2.jpg" width="210" height="297">
-<img src="./imgs/readme_imgs/report_sample3.jpg" width="210" height="297">
-
-I decided to work with all the data from the 2011 - 2012 season onwards given that most players in the league today have been in the league for under 10 years.
+<table>
+  <tr>
+   <td><img src="./imgs/readme_imgs/report_sample1.jpg"  alt="1" width="210" height="297"></td>
+   <td><img src="./imgs/readme_imgs/report_sample2.jpg" align="right" alt="2" width="210" height="297"></td>
+   <td><img src="./imgs/readme_imgs/report_sample3.jpg" alt="3" width="210" height="297"></td>
+  </tr>
+</table>
 
 ## API Requests (Grequests)
 
