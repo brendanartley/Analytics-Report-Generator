@@ -1,6 +1,5 @@
 import sys
 import grequests
-from pkg_resources import EntryPoint
 import constants
 import json
 from tqdm import tqdm
@@ -532,9 +531,7 @@ def get_players_info_by_season(player_id_array, fname):
         f.seek(f.tell() - 2, 0)  # seek to the second last char of file
         f.truncate()
     
-
 def main(output):
-
     ss = 20112012
     se = 20202021
 

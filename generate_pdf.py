@@ -3,10 +3,7 @@ from fpdf import FPDF
 import report_generation.plotting_functions
 import os
 
-#crosby - 8471675
-#schenn - 8474568
-
-p_id = 8471675
+p_id = 8480012
 season = 20202021
 
 goal_stats_list, player_info, player_stats_list = report_generation.plotting_functions.generate_all_plots(p_id = p_id, season = season)
