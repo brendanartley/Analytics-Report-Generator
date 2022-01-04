@@ -1,17 +1,9 @@
 ## Report Generation
 
-Scripts containing code to generate the report.
+`data_query.py`
 
-## Notes / Changes
+The data query script contains the pyspark script that starts a spark session, and filters data by the player_id and season. The sript returns a pandas dataframe, a couple short arrays, and a dictionary. These are used to create that plots that are included in the report.
 
-Currently the plot is accurate to the nearest degree. Maybe change so the points are more accurate..
+`plotting_functions.py`
 
-- Once getting finalized, I should create a config file and format the code better.
-
-- Make sure the font sizes all match.
-    - Some of the saved plots appear with different sizes
-
-
-## Words to include?
-
-During 
+This script contains the custom Matplotlib functions used the generate the plots in the report

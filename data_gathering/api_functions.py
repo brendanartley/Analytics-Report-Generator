@@ -4,6 +4,7 @@ import constants
 import json
 from tqdm import tqdm
 import re
+import os
 
 def get_game_ids(just_regular_season, filter_by_team, season_start, season_end, teamId=23):
     """
@@ -531,9 +532,23 @@ def get_players_info_by_season(player_id_array, fname):
         f.seek(f.tell() - 2, 0)  # seek to the second last char of file
         f.truncate()
     
+def check_raw_data_directory():
+    """
+    Checks if the temporary directory has already been created
+    """
+    if os.path.isdir("./raw_data") and len(os.listdir("./raw_data")) != 0:
+        sys.exit(" ERROR:\n - Raw_data contains files? Remove data and store elsewhere before proceeding -")
+    else:
+        if not os.path.isdir("./raw_data"):
+            os.mkdir("./raw_data")
+    pass
+
 def main(output):
     ss = 20112012
     se = 20202021
+
+    #check raw_data directory
+    check_raw_data_directory()
 
     #get ids
     all_game_ids = get_game_ids(just_regular_season=True, filter_by_team=False, season_start=ss, season_end=se)

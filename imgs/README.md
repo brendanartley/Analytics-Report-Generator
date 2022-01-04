@@ -1,3 +1,3 @@
 ## Imgs
 
-nhl_coordinates.jpeg - provides a graphic of the coordinates that the API follows. Need to check the accuracy of this though. Maybe using tableau or some other custom visualization software to view events on the rink?
+Contains images used in the main README.md file, and also the team_logos named by their respective team id's.

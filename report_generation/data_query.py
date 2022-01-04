@@ -7,7 +7,8 @@ from pyspark.sql import SparkSession, functions, types #type:ignore
 
 def query(p_id, season):
 
-    print(str(p_id) + " - " + str(season))
+    print("Player ID: " + str(p_id))
+    print("Season: " + str(season))
 
     #start spark session
     spark = SparkSession.builder.appName('example code').getOrCreate()
