@@ -18,7 +18,7 @@ The first part of the project involved querying the NHL API to get all the games
 
 See more about the NHL API here --> [NHL Api Docs](https://gitlab.com/dword4/nhlapi/-/blob/master/stats-api.md#configurations)
 
-Asynchronous requests basically send requests in parallel to reduce the time spent waiting for data to be sent from the server. That being said, doing large-scale requests in parallel can create server lag, so I performed these requests in batches of 100 to reduce server strain. 
+Asynchronous requests send requests in parallel to reduce the time spent waiting for data to be sent from the server. That being said, doing large-scale requests in parallel can create server lag, so I performed these requests in batches of 100 to reduce server strain. 
 
 For each batch, the API returns data in a JSON format and I used a context manager to write this to disk. 
 
@@ -88,7 +88,7 @@ To run the code in the project and start generating reports, follow the steps be
 
 `python data_gathering/api_functions.py` 
 
-Note: Try and do this step outside of game times (when server has low traffic) as this will take roughly 15-20 mins and will be taxing if other users are using the API
+Note: Try and do this step outside of game times (when the server has low traffic) as this will take roughly 15-20 mins and will be taxing if other users are using the API
 
 3. Convert JSON to Parquet
 
