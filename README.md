@@ -1,5 +1,7 @@
 # Analytics Report Generator
 
+## 11/17/2023: NHL stats API updated, repo no longer maintained.
+
 ## Overview / Purpose
 
 The generated report is meant to provide coaches and players with a snapshot of their overall performance for a given season. The report can also be used by opposing teams to get a sense of where specific players are threatening in the offensive zone. This can be useful in guiding player development or preparing players for likely matchups in upcoming games.
